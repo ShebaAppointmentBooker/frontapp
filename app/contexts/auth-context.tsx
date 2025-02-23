@@ -14,6 +14,8 @@ import axios, {
 import * as SecureStore from "expo-secure-store";
 
 import { API_ENDPOINTS, Actions, BASE_URL } from "../../config";
+import { Alert } from "react-native";
+import { otpType } from "../types/otpType";
 interface User {
   id: string;
   email: string;
@@ -26,7 +28,9 @@ interface AuthContextType {
   refreshToken: string | null;
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  // login: (email: string, password: string) => Promise<void>;
+  requestOtp: (nationalId: string) => Promise<otpType>;
+  loginWithOtp: (token: string, otp: string, user: string) => Promise<void>;
   logout: () => Promise<void>;
   apiRequest: <T = any>(config: AxiosRequestConfig) => Promise<T>;
 }
@@ -64,47 +68,93 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     initializeAuth();
   }, []);
-
-  // Handle Login
-  const login = async (email: string, password: string) => {
-    setLoading(true);
+  // useEffect(() => {
+  //   console.log("auth", token);
+  // }, [token]);
+  const requestOtp = async (nationalId: string) => {
+    // setLoading(true);
     try {
-      // const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
-      //   email,
-      //   password,
-      // });
-      console.log(API_ENDPOINTS.patient[Actions.LOGIN]);
-      const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
-        email: "jane.smith@example.com",
-        password: "password123",
-      });
-
-      const { accessToken, refreshToken, user } = response.data;
-      setToken(accessToken);
-      setRefreshToken(refreshToken);
-      setUser(user);
-
-      await SecureStore.setItemAsync("token", accessToken);
-      await SecureStore.setItemAsync("refreshToken", refreshToken);
-      await SecureStore.setItemAsync("user", JSON.stringify(user));
-      console.log("login success!!!", accessToken, refreshToken, user);
+      const response = await axios.post(
+        API_ENDPOINTS.patient[Actions.REQUESTOTP],
+        {
+          nationalId,
+        }
+      );
+      //const { token, otp, user,expMinutes }=response.data
+      return response.data;
     } catch (error) {
-      if(axios.isAxiosError(error))
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.error("Response error:", error.response);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error("Request error:", error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.error("General error:", error.message);
-      }
+      console.error("Request OTP error:", error);
+      throw error;
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
+  const loginWithOtp = async (token: string, otp: string, user: string) => {
+    // setLoading(true);
+    try {
+      console.log(otp, "lol");
+      const response = await axios.post(
+        API_ENDPOINTS.patient[Actions.LOGINOTP],
+        {
+          token,
+          otp,
+        }
+      );
+      // Store accessToken and refreshToken in your app state
+      const { accessToken, refreshToken } = response.data;
+      console.log(response.data);
+      setToken(accessToken);
+      setRefreshToken(refreshToken);
+      await SecureStore.setItemAsync("token", accessToken);
+      await SecureStore.setItemAsync("refreshToken", refreshToken);
+      await SecureStore.setItemAsync("user", user);
+    } catch (error) {
+      console.error("Login with OTP error:", error);
+      Alert.alert("Error", "Failed to log in with OTP");
+    } finally {
+      // setLoading(false);
+    }
+  };
+  // Handle Login
+  // const login = async (email: string, password: string) => {
+  //   setLoading(true);
+  //   try {
+  //     // const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
+  //     //   email,
+  //     //   password,
+  //     // });
+  //     console.log(API_ENDPOINTS.patient[Actions.LOGIN]);
+  //     const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
+  //       email: "jane.smith@example.com",
+  //       password: "password123",
+  //     });
+
+  //     const { accessToken, refreshToken, user } = response.data;
+  //     setToken(accessToken);
+  //     setRefreshToken(refreshToken);
+  //     setUser(user);
+
+  //     await SecureStore.setItemAsync("token", accessToken);
+  //     await SecureStore.setItemAsync("refreshToken", refreshToken);
+  //     await SecureStore.setItemAsync("user", JSON.stringify(user));
+  //     console.log("login success!!!", accessToken, refreshToken, user);
+  //   } catch (error) {
+  //     if (axios.isAxiosError(error))
+  //       if (error.response) {
+  //         // The request was made and the server responded with a status code
+  //         // that falls out of the range of 2xx
+  //         console.error("Response error:", error.response);
+  //       } else if (error.request) {
+  //         // The request was made but no response was received
+  //         console.error("Request error:", error.request);
+  //       } else {
+  //         // Something happened in setting up the request that triggered an Error
+  //         console.error("General error:", error.message);
+  //       }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Handle Logout
   const logout = async () => {
@@ -120,7 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("user");
 
-      setToken(null);
+      // setToken(null);
       setRefreshToken(null);
       setUser(null);
     } catch (error) {
@@ -209,7 +259,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, refreshToken, user, loading, login, logout, apiRequest }}
+      value={{
+        token,
+        refreshToken,
+        user,
+        loading,
+        requestOtp,
+        loginWithOtp,
+        logout,
+        apiRequest,
+      }}
     >
       {children}
     </AuthContext.Provider>

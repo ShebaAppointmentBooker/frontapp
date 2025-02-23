@@ -22,17 +22,18 @@ import {
   moderateScale,
 } from "../services/scaling/scaling";
 type OTPInputProps = {
-  pinCount : number;
-  onCodeFilled: (phoneNumber:string) => Promise<void>;
+  pinCount: number;
+  onCodeFilled: (phoneNumber: string) => Promise<void>;
   style?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<ViewStyle>;
-  error?:boolean;
-  autoFocus?:boolean;
-  secureTextEntry?:boolean;
-  otpTimeout ?: number;
+  error?: boolean;
+  autoFocus?: boolean;
+  secureTextEntry?: boolean;
+  otpTimeout?: number;
   resendOTP: () => void;
+  onTimeout: () => void;
 };
-type selectionType={ start: number, end: number }
+type selectionType = { start: number; end: number };
 const OTPInput: FC<OTPInputProps> = ({
   pinCount = 6,
   onCodeFilled,
@@ -43,6 +44,7 @@ const OTPInput: FC<OTPInputProps> = ({
   secureTextEntry = false,
   otpTimeout = 20,
   resendOTP,
+  onTimeout
 }) => {
   const [code, setCode] = useState(new Array(pinCount).fill(""));
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -63,8 +65,7 @@ const OTPInput: FC<OTPInputProps> = ({
   //   }
   // };
 
-  
-  const handleFocusAtPosition = (position:number) => {
+  const handleFocusAtPosition = (position: number) => {
     // Example: Position the cursor after the 3rd character (index 2)
     // Or highlight the 3rd character by setting selection start and end around it
     // Index of the character to highlight or position cursor after
@@ -74,7 +75,7 @@ const OTPInput: FC<OTPInputProps> = ({
       setSelection({ start: position + 1, end: position + 1 });
     }
   };
-  const handleChangeMain = (text:string) => {
+  const handleChangeMain = (text: string) => {
     // let tempArray = text.split("").slice(0, 6);
     let tempArray = text.split("");
 
@@ -125,13 +126,13 @@ const OTPInput: FC<OTPInputProps> = ({
     inputsRef.current[pinCount - 1].focus();
   };
 
-  const notifyCodeChange = (code:string) => {
+  const notifyCodeChange = (code: string) => {
     if (onCodeFilled) {
       onCodeFilled(code);
     }
   };
 
-  const updateCodeAndHandleFocus = (text:string, index:number) => {
+  const updateCodeAndHandleFocus = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text.charAt(0); // Take only the first character
     setCode(newCode);
@@ -144,8 +145,6 @@ const OTPInput: FC<OTPInputProps> = ({
     }
   };
 
-  
-
   useEffect(() => {
     if (autoFocus) {
       // Focus the input right after the component mounts
@@ -154,11 +153,17 @@ const OTPInput: FC<OTPInputProps> = ({
       // On Android, the keyboard might not open automatically in some cases.
       // As a workaround, you can explicitly ask for the keyboard to show up.
     }
+  }, []);
+  useEffect(() => {
+    if (timer <= 0) {
+      onTimeout?.();
+      return;
+    }
     const countdown = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(countdown);
-  }, []);
+  }, [timer, onTimeout]);
   useEffect(() => {
     if (code.every((val) => val.length === 1 && val !== " ")) {
       if (mainInputsRef.current) {
@@ -170,7 +175,6 @@ const OTPInput: FC<OTPInputProps> = ({
   useEffect(() => {
     console.log(selection?.start);
   }, [selection]);
- 
 
   const handleBlur = () => {
     setFocusedIndex(-1);
@@ -210,8 +214,6 @@ const OTPInput: FC<OTPInputProps> = ({
   //   }
   // };
 
-  
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
@@ -230,7 +232,8 @@ const OTPInput: FC<OTPInputProps> = ({
                     styles.input,
                     inputStyle,
                     error && styles.errorInput,
-                    selection?.start!==undefined&&selection?.start - 1 === index
+                    selection?.start !== undefined &&
+                    selection?.start - 1 === index
                       ? {
                           shadowColor: "#0000ff",
                           borderWidth: 1,
@@ -297,7 +300,7 @@ const OTPInput: FC<OTPInputProps> = ({
                   fontSize: moderateScale(13),
                 }}
               >
-                הקוד ישלח בעוד
+                הקוד יפוג בעוד
               </Text>
               <Text
                 style={{

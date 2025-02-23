@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './contexts/auth-context'; // Import AuthP
 
 // Root layout component
 const RootLayout = () => {
-  const {  loading } = useAuth();
+  const { token, loading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   // Set isMounted to true once the component has mounted

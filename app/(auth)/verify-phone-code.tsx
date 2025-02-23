@@ -10,19 +10,27 @@ import {
   View,
   KeyboardAvoidingView,
 } from "react-native";
-
+import { useAuth } from "../contexts/auth-context";
 import OTPInput from "./otp-input";
 import { verticalScale } from "../services/scaling/scaling";
-type VeriPhoneCodeProps = {
-  resendOTP: (phoneNumber: string) => Promise<boolean>;
+import { otpType } from "../types/otpType";
+type VeriIdCodeProps = {
+  resendOTP: () => Promise<void>;
+  confirmCredentials: otpType;
+  resetCredentials: () => void;
 };
-const VeriPhoneCode: FC<VeriPhoneCodeProps> = ({ resendOTP }) => {
+const VeriIdCode: FC<VeriIdCodeProps> = ({
+  resendOTP,
+  resetCredentials,
+  confirmCredentials,
+}) => {
   const [state, setState] = useState({ loading: false, errorMessage: "" });
+  const { loginWithOtp } = useAuth();
   const windowWidth = useWindowDimensions().width;
   const resend = () => {
     setState({ ...state, loading: true });
 
-    resendOTP("")
+    resendOTP()
       .then(() => {
         setState({ ...state, loading: false });
       })
@@ -41,30 +49,40 @@ const VeriPhoneCode: FC<VeriPhoneCodeProps> = ({ resendOTP }) => {
         setState({ ...state, loading: false });
       });
   };
-  const confirmCode = useCallback(async () => {
-    setState({ ...state, loading: true });
-    try {
-      setState({ ...state, loading: false });
-      // navigation.replace("Home");
-      //זה עובד בלי נביגיישן
-    } catch (errorCode) {
-      var errorMessage = "קרתה שגיאה אנא סגור את האפליקציה ונסה שוב";
+  const confirmCode = useCallback(
+    async (code: string) => {
+      setState({ ...state, loading: true });
+      try {
+        setState({ ...state, loading: false });
+        console.log(code)
+        await loginWithOtp(confirmCredentials.token, code,confirmCredentials.user);
+      } catch (errorCode) {
+        var errorMessage = "קרתה שגיאה אנא סגור את האפליקציה ונסה שוב";
 
-      if (errorCode === "auth/invalid-verification-code") {
-        errorMessage = "הוכנס קוד שגוי";
-        // Here you can update your UI to inform the user
+        if (errorCode === "auth/invalid-verification-code") {
+          errorMessage = "הוכנס קוד שגוי";
+          // Here you can update your UI to inform the user
+        }
+        setState({ loading: false, errorMessage });
+      } finally {
+        setState({ ...state, loading: false });
       }
-      setState({ loading: false, errorMessage });
-    } finally {
-      setState({ ...state, loading: false });
-    }
-  }, [state]);
+    },
+    [state]
+  );
 
   return (
     <SafeAreaView style={styles.wrapper}>
-      <Text style={styles.prompt}>מה קוד האימות שקיבלתם?</Text>
-
-      <OTPInput pinCount={6} onCodeFilled={confirmCode} resendOTP={resend} />
+      <Text style={styles.prompt}>היי {confirmCredentials.user}!</Text>
+      <Text style={styles.prompt}>מה קוד האימות שקיבלת?</Text>
+      <Text>פסססס אל תגלו לאף אחד אבל הקוד הוא {confirmCredentials.otp}</Text>
+      <OTPInput
+        onTimeout={() => resetCredentials()}
+        otpTimeout={confirmCredentials.expMinutes * 60}
+        pinCount={6}
+        onCodeFilled={confirmCode}
+        resendOTP={resend}
+      />
 
       {state.errorMessage && (
         <Text style={styles.error}>{state.errorMessage}</Text>
@@ -165,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VeriPhoneCode;
+export default VeriIdCode;

@@ -16,7 +16,7 @@ import {
 import { SvgXml } from "react-native-svg";
 import Icon from "react-native-vector-icons/Ionicons";
 
-type GenericPhoneInputProps = {
+type GenericInputProps = {
   placeholder?: string;
   regex?: RegExp;
   onInputChange: (text: string) => void;
@@ -26,10 +26,10 @@ type GenericPhoneInputProps = {
   setIsValidInput: (isValid: boolean) => void;
   showSoftInputOnFocus?: boolean;
   imageButton?: boolean;
-  svgButtonSource: string;
+  svgButtonSource?: string;
   onPress?: () => void;
 };
-const GenericPhoneInput: FC<GenericPhoneInputProps> = ({
+const GenericInput: FC<GenericInputProps> = ({
   placeholder,
   regex,
   onInputChange,
@@ -110,7 +110,9 @@ const GenericPhoneInput: FC<GenericPhoneInputProps> = ({
 
   return (
     <View style={[styles.inputContainer, style]}>
-      <SvgXml onPress={onPress} style={{}} xml={svgButtonSource} />
+      {svgButtonSource && (
+        <SvgXml onPress={onPress} style={{}} xml={svgButtonSource} />
+      )}
 
       <View style={styles.iconContainer}>
         {isValidInput ? (
@@ -216,4 +218,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GenericPhoneInput;
+export default GenericInput;
