@@ -1,39 +1,33 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+// app/_layout.tsx
+import React, { useEffect, useState } from 'react';
+import { Slot, Redirect } from 'expo-router';
+import { AuthProvider, useAuth } from './contexts/auth-context'; // Import AuthProvider & useAuth
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// Root layout component
+const RootLayout = () => {
+  const {  loading } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
+  // Set isMounted to true once the component has mounted
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    setIsMounted(true);
+  }, []);
 
-  if (!loaded) {
-    return null;
-  }
+  // Show loading spinner or placeholder while loading
+  if (loading || !isMounted) return null; // Wait until mounted and loading is finished
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
-}
+  // Redirect to the login page if no token exists
+  // if (!token) return <Redirect href="/(auth)" />; // This ensures the redirect only happens after the component mounts
+
+  // Render the main app when authenticated
+  return <Slot />;
+};
+
+// Wrap RootLayout with AuthProvider
+const WrappedRootLayout = () => (
+  <AuthProvider>
+    <RootLayout />
+  </AuthProvider>
+);
+
+export default WrappedRootLayout;
