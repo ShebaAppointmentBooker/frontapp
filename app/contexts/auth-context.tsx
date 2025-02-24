@@ -160,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       if (token) {
+        console.log(API_ENDPOINTS.patient[Actions.LOGOUT],refreshToken)
         await axios.post(
           API_ENDPOINTS.patient[Actions.LOGOUT],
           { refreshToken },
@@ -170,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("user");
 
-      // setToken(null);
+      setToken(null);
       setRefreshToken(null);
       setUser(null);
     } catch (error) {

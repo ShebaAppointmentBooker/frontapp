@@ -3,6 +3,7 @@ import LoginOtp from "./login-otp";
 import VerIdCode from "./verify-phone-code";
 import { useAuth } from "../contexts/auth-context";
 import { otpType } from "../types/otpType";
+import { Redirect } from "expo-router";
 
 const IdIndex = () => {
   const [confirmCredentials, setConfirmCredentials] = React.useState<otpType>({
@@ -12,7 +13,7 @@ const IdIndex = () => {
     expMinutes: 0,
   });
   const [id, setId] = React.useState("");
-  const {  requestOtp } = useAuth();
+  const { requestOtp, refreshToken } = useAuth();
 
   const reRequestOtpFunction = async () => {
     await requestOtpFunction(id);
@@ -34,6 +35,9 @@ const IdIndex = () => {
       throw e;
     }
   };
+  if (refreshToken) {
+    return <Redirect href="/" />;
+  }
   if (confirmCredentials.token)
     return (
       <VerIdCode
