@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (storedToken) {
           await verifyToken();
-          console.log(user);
+          console.log("verfied "+user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
