@@ -1,21 +1,30 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
+import { useAuth } from "../contexts/auth-context";
 export default function MainLayout() {
+  const { logout } = useAuth();
   return (
     <Tabs>
       <Tabs.Screen
-        name="home"  // Points to app/main/home.tsx
+        name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
+          headerRight: () => (
+            <View style={styles.headerRightContainer}>
+            <TouchableOpacity style={styles.logout} onPress={logout}>
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="settings"  // Points to app/main/settings.tsx
+        name="settings"
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
@@ -26,3 +35,18 @@ export default function MainLayout() {
     </Tabs>
   );
 }
+const styles = StyleSheet.create({
+  headerRightContainer: {
+    paddingRight: 10,
+  },
+  logout: {
+    backgroundColor: "red",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  logoutText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+});

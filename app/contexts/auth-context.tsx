@@ -26,7 +26,7 @@ interface User {
 interface AuthContextType {
   token: string | null;
   refreshToken: string | null;
-  user: User | null;
+  user: string | null;
   loading: boolean;
   // login: (email: string, password: string) => Promise<void>;
   requestOtp: (nationalId: string) => Promise<otpType>;
@@ -42,7 +42,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -56,9 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedToken) {
+          console.log(user)
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
-          setUser(JSON.parse(storedUser || "{}"));
+          setUser(storedUser);
         }
       } catch (error) {
         console.error("Error loading authentication data", error);
