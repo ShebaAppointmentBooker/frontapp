@@ -46,22 +46,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const verifyToken = async () => {
+      const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
+        token,
+      });
+    };
     const initializeAuth = async () => {
       setLoading(true);
+      let storedToken = null;
       try {
-        const storedToken = await SecureStore.getItemAsync("token");
+        storedToken = await SecureStore.getItemAsync("token");
         const storedRefreshToken = await SecureStore.getItemAsync(
           "refreshToken"
         );
         const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedToken) {
-          console.log(user)
+          await verifyToken();
+          console.log(user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
         }
       } catch (error) {
+        if (storedToken) deleteCreds();
         console.error("Error loading authentication data", error);
       } finally {
         setLoading(false);
@@ -158,16 +166,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // };
 
   // Handle Logout
-  const logout = async () => {
+  const deleteCreds = async () => {
     try {
-      if (token) {
-        console.log(API_ENDPOINTS.patient[Actions.LOGOUT],refreshToken)
-        await axios.post(
-          API_ENDPOINTS.patient[Actions.LOGOUT],
-          { refreshToken },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
+      // Clear SecureStore and reset authentication state
       await SecureStore.deleteItemAsync("token");
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("user");
@@ -176,10 +177,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setRefreshToken(null);
       setUser(null);
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Error during logout cleanup:", error);
     }
   };
-
+  const logout = async () => {
+    try {
+      if (token) {
+        console.log(API_ENDPOINTS.patient[Actions.LOGOUT], refreshToken);
+        await axios.post(
+          API_ENDPOINTS.patient[Actions.LOGOUT],
+          { refreshToken },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        console.warn(
+          "Token expired or unauthorized. Proceeding with logout..."
+        );
+      } else {
+        console.error("Logout error:", error);
+      }
+    } finally {
+      deleteCreds();
+    }
+  };
   // Handle Token Refresh
   const refreshAuthToken = async () => {
     if (!refreshToken) {

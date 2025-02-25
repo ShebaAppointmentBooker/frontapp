@@ -9,6 +9,7 @@ export enum Actions { // Add the `export` keyword here
   // LOGIN = "login",
   LOGOUT = "logout",
   REFRESH_TOKEN = "refresh-token",
+  VERIFY="verify"
 }
 
 // Define base paths for Doctor and Patient
@@ -23,6 +24,7 @@ const generateEndpoints = (modelPath: string) => {
     // [Actions.LOGIN]: `${modelPath}/${Actions.LOGIN}`,
     [Actions.LOGOUT]: `${modelPath}/${Actions.LOGOUT}`,
     [Actions.REFRESH_TOKEN]: `${modelPath}/${Actions.REFRESH_TOKEN}`,
+    [Actions.VERIFY]: `${modelPath}/${Actions.VERIFY}`,
   };
 };
 
