@@ -46,11 +46,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const verifyToken = async () => {
-      const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
-        token,
-      });
-    };
+    // const verifyToken = async () => {
+    //   const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
+    //     token,
+    //   });
+    // };
     const initializeAuth = async () => {
       setLoading(true);
       let storedToken = null;
@@ -62,14 +62,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedToken) {
-          await verifyToken();
+          // await verifyToken();
           console.log("verfied "+user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
         }
       } catch (error) {
-        if (storedToken) deleteCreds();
+        // if (storedToken) deleteCreds();
         console.error("Error loading authentication data", error);
       } finally {
         setLoading(false);
