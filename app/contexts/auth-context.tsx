@@ -46,24 +46,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // const verifyToken = async () => {
-    //   const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
-    //     token,
-    //   });
-    // };
+    const verifyToken = async (refreshToken: string | null) => {
+      const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
+        refreshToken,
+      });
+    };
     const initializeAuth = async () => {
       setLoading(true);
-      let storedToken = null;
       try {
-        storedToken = await SecureStore.getItemAsync("token");
+        const storedToken = await SecureStore.getItemAsync("token");
         const storedRefreshToken = await SecureStore.getItemAsync(
           "refreshToken"
         );
         const storedUser = await SecureStore.getItemAsync("user");
 
-        if (storedToken) {
-          // await verifyToken();
-          console.log("verfied "+user);
+        if (storedRefreshToken) {
+          console.log("validating "+refreshToken)
+          await verifyToken(storedRefreshToken);
+          console.log("verfied " + user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
@@ -266,12 +266,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (response) => response,
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
-          const newToken = await refreshAuthToken();
-          if (newToken && error.config) {
-            error.config.headers =
-              error.config.headers || new axios.AxiosHeaders();
-            error.config.headers.set("Authorization", `Bearer ${newToken}`);
-            return api.request(error.config);
+          try {
+            const newToken = await refreshAuthToken();
+            if (newToken && error.config) {
+              error.config.headers =
+                error.config.headers || new axios.AxiosHeaders();
+              error.config.headers.set("Authorization", `Bearer ${newToken}`);
+              return api.request(error.config);
+            }
+          } catch (refreshError) {
+            console.error("Failed to refresh token:", refreshError);
+            deleteCreds();
+            return Promise.reject(refreshError);
           }
         }
         return Promise.reject(error);

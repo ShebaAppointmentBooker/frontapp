@@ -1,10 +1,16 @@
-import React from "react";
-import { Tabs } from "expo-router";
+import React, { useEffect } from "react";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import { useAuth } from "../contexts/auth-context";
 export default function MainLayout() {
-  const { logout } = useAuth();
+  const { logout,token } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!token) {
+      router.replace("/"); 
+    }
+  }, [token]);
   return (
     <Tabs>
       <Tabs.Screen
