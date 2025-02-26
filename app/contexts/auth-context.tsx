@@ -50,27 +50,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
         refreshToken,
       });
+      console.log(response.data)
     };
     const initializeAuth = async () => {
       setLoading(true);
+      let storedRefreshToken;
       try {
         const storedToken = await SecureStore.getItemAsync("token");
-        const storedRefreshToken = await SecureStore.getItemAsync(
+        storedRefreshToken = await SecureStore.getItemAsync(
           "refreshToken"
         );
         const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedRefreshToken) {
-          console.log("validating "+refreshToken)
+          console.log("validating "+storedRefreshToken)
           await verifyToken(storedRefreshToken);
           console.log("verfied " + user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
         }
-      } catch (error) {
-        // if (storedToken) deleteCreds();
-        console.error("Error loading authentication data", error);
+      } catch (error:any) {
+        if (storedRefreshToken) deleteCreds();
+        console.error("Error loading authentication data", error.response.data);
       } finally {
         setLoading(false);
       }

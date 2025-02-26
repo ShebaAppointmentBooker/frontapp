@@ -1,6 +1,6 @@
 // config.ts
-// export const BASE_URL = "http://192.168.1.240:5000/api";
-export const BASE_URL = "http://192.168.168.38:5000/api";
+export const BASE_URL = "http://192.168.1.240:5000/api";
+// export const BASE_URL = "http://192.168.168.38:5000/api";
 
 // Enum for common actions (login, logout, refreshToken)
 export enum Actions { // Add the `export` keyword here
