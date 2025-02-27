@@ -1,11 +1,12 @@
 // app/_layout.tsx
-import React, { useEffect, useState } from 'react';
-import { Slot, Redirect } from 'expo-router';
-import { AuthProvider, useAuth } from './contexts/auth-context'; // Import AuthProvider & useAuth
+import React, { useEffect, useState } from "react";
+import { Slot, Redirect } from "expo-router";
+import { AuthProvider, useAuth } from "./contexts/auth-context"; // Import AuthProvider & useAuth
+import { AppointmentProvider } from "./contexts/appointment-context.tsx";
 
 // Root layout component
 const RootLayout = () => {
-  const { token, loading } = useAuth();
+  const { token, loadingStartUp } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   // Set isMounted to true once the component has mounted
@@ -14,7 +15,7 @@ const RootLayout = () => {
   }, []);
 
   // Show loading spinner or placeholder while loading
-  if (loading || !isMounted) return null; // Wait until mounted and loading is finished
+  if (loadingStartUp || !isMounted) return null; // Wait until mounted and loading is finished
 
   // Redirect to the login page if no token exists
   // if (!token) return <Redirect href="/(auth)" />; // This ensures the redirect only happens after the component mounts
@@ -26,7 +27,9 @@ const RootLayout = () => {
 // Wrap RootLayout with AuthProvider
 const WrappedRootLayout = () => (
   <AuthProvider>
-    <RootLayout />
+    <AppointmentProvider>
+      <RootLayout />
+    </AppointmentProvider>
   </AuthProvider>
 );
 

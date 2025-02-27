@@ -3,9 +3,9 @@ import { Redirect } from "expo-router";
 import { useAuth } from "./contexts/auth-context";
 
 const Index = () => {
-  const { token, loading } = useAuth();
+  const { token, loadingStartUp } = useAuth();
 
-  if (loading) return null;
+  if (loadingStartUp) return null;
 
   if (!token) return <Redirect href="/auth/signInIndex" />; // Correct path to login page
 

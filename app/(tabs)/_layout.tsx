@@ -3,14 +3,17 @@ import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import { useAuth } from "../contexts/auth-context";
+
 export default function MainLayout() {
-  const { logout,token } = useAuth();
+  const { logout, token } = useAuth();
   const router = useRouter();
+
   useEffect(() => {
     if (!token) {
-      router.replace("/"); 
+      router.replace("/");
     }
   }, [token]);
+
   return (
     <Tabs>
       <Tabs.Screen
@@ -22,10 +25,10 @@ export default function MainLayout() {
           ),
           headerRight: () => (
             <View style={styles.headerRightContainer}>
-            <TouchableOpacity style={styles.logout} onPress={logout}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={styles.logout} onPress={logout}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -41,6 +44,7 @@ export default function MainLayout() {
     </Tabs>
   );
 }
+
 const styles = StyleSheet.create({
   headerRightContainer: {
     paddingRight: 10,

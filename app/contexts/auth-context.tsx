@@ -13,7 +13,11 @@ import axios, {
 } from "axios";
 import * as SecureStore from "expo-secure-store";
 
-import { API_ENDPOINTS, Actions, BASE_URL } from "../../config";
+import { API_ENDPOINTS } from "../../urlConfig/main-config";
+import {
+  COMPLETE_USERS_ROUTE,
+  UserActions,
+} from "../../urlConfig/users-config";
 import { Alert } from "react-native";
 import { otpType } from "../types/otpType";
 interface User {
@@ -28,11 +32,16 @@ interface AuthContextType {
   refreshToken: string | null;
   user: string | null;
   loading: boolean;
+  loadingStartUp: boolean;
   // login: (email: string, password: string) => Promise<void>;
   requestOtp: (nationalId: string) => Promise<otpType>;
   loginWithOtp: (token: string, otp: string, user: string) => Promise<void>;
   logout: () => Promise<void>;
-  apiRequest: <T = any>(config: AxiosRequestConfig) => Promise<T>;
+  apiRequest: <T = any>(
+    config: AxiosRequestConfig,
+    baseURL: string
+  ) => Promise<T>;
+  refreshAuthTokenFunction: () => Promise<void>;
 }
 
 // Create the Auth context
@@ -43,38 +52,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [user, setUser] = useState<string | null>(null);
+  const [loadingStartUp, setLoadingStartUp] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const verifyToken = async (refreshToken: string | null) => {
-      const response = await axios.post(API_ENDPOINTS.patient[Actions.VERIFY], {
-        refreshToken,
-      });
-      console.log(response.data)
+      const response = await axios.post(
+        API_ENDPOINTS.patient[UserActions.VERIFY],
+        {
+          refreshToken,
+        },
+        { timeout: 10000 }
+      );
+      console.log(response.data);
     };
     const initializeAuth = async () => {
-      setLoading(true);
+      setLoadingStartUp(true);
       let storedRefreshToken;
       try {
         const storedToken = await SecureStore.getItemAsync("token");
-        storedRefreshToken = await SecureStore.getItemAsync(
-          "refreshToken"
-        );
+        storedRefreshToken = await SecureStore.getItemAsync("refreshToken");
         const storedUser = await SecureStore.getItemAsync("user");
 
         if (storedRefreshToken) {
-          console.log("validating "+storedRefreshToken)
+          console.log("validating " + storedRefreshToken);
           await verifyToken(storedRefreshToken);
           console.log("verfied " + user);
           setToken(storedToken);
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
         }
-      } catch (error:any) {
+      } catch (error: any) {
         if (storedRefreshToken) deleteCreds();
         console.error("Error loading authentication data", error.response.data);
       } finally {
-        setLoading(false);
+        setLoadingStartUp(false);
       }
     };
     initializeAuth();
@@ -84,16 +96,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // }, [token]);
   const requestOtp = async (nationalId: string) => {
     // setLoading(true);
+    console.log(API_ENDPOINTS.patient[UserActions.REQUESTOTP]);
     try {
       const response = await axios.post(
-        API_ENDPOINTS.patient[Actions.REQUESTOTP],
+        API_ENDPOINTS.patient[UserActions.REQUESTOTP],
         {
           nationalId,
-        }
+        },
+        { timeout: 10000 }
       );
       //const { token, otp, user,expMinutes }=response.data
       return response.data;
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const errorCode = error.code;
+        console.log(error.code)
+        if (errorCode === "ECONNABORTED")
+          Alert.alert(
+            "Request Timeout",
+            "The request took too long to complete. Please try again."
+          );
+      }
+
       console.error("Request OTP error:", error);
       throw error;
     } finally {
@@ -105,11 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log(otp, "lol");
       const response = await axios.post(
-        API_ENDPOINTS.patient[Actions.LOGINOTP],
+        API_ENDPOINTS.patient[UserActions.LOGINOTP],
         {
           token,
           otp,
-        }
+        },
+        { timeout: 10000 }
       );
       // Store accessToken and refreshToken in your app state
       const { accessToken, refreshToken } = response.data;
@@ -120,6 +145,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await SecureStore.setItemAsync("refreshToken", refreshToken);
       await SecureStore.setItemAsync("user", user);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const errorCode = error.code;
+        if (errorCode === "ECONNABORTED")
+          Alert.alert(
+            "Request Timeout",
+            "The request took too long to complete. Please try again."
+          );
+      }
       console.error("Login with OTP error:", error);
       Alert.alert("Error", "Failed to log in with OTP");
     } finally {
@@ -185,11 +218,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       if (token) {
-        console.log(API_ENDPOINTS.patient[Actions.LOGOUT], refreshToken);
+        console.log(API_ENDPOINTS.patient[UserActions.LOGOUT], refreshToken);
         await axios.post(
-          API_ENDPOINTS.patient[Actions.LOGOUT],
+          API_ENDPOINTS.patient[UserActions.LOGOUT],
           { refreshToken },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 }
         );
       }
     } catch (error: any) {
@@ -205,7 +238,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   // Handle Token Refresh
-  const refreshAuthToken = async () => {
+  const refreshAuthTokenFunction = async () => {
     if (!refreshToken) {
       console.error("No refresh token available");
       await logout();
@@ -214,10 +247,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const response = await axios.post(
-        API_ENDPOINTS.patient[Actions.REFRESH_TOKEN],
+        API_ENDPOINTS.patient[UserActions.REFRESH_TOKEN],
         {
           refreshToken,
-        }
+        },
+        { timeout: 10000 }
       );
 
       const { token: newToken, refreshToken: newRefreshToken } = response.data;
@@ -230,6 +264,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return newToken;
     } catch (error) {
+      
       console.error("Error refreshing token:", error);
       await logout();
       return null;
@@ -238,11 +273,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Create an Axios instance with request and response interceptors
   const apiRequest = async <T = any,>(
-    config: AxiosRequestConfig
+    config: AxiosRequestConfig,
+    baseURL: string,
+    timeout?: 10000
   ): Promise<T> => {
     const api = axios.create({
-      baseURL: BASE_URL,
+      baseURL,
       headers: { "Content-Type": "application/json" },
+      timeout,
     });
     //this is only for dev because the servers ssl is untrusted
     api.interceptors.request.use(async (config) => {
@@ -267,21 +305,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     api.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        if (error.response?.status === 401) {
-          try {
-            const newToken = await refreshAuthToken();
-            if (newToken && error.config) {
-              error.config.headers =
-                error.config.headers || new axios.AxiosHeaders();
-              error.config.headers.set("Authorization", `Bearer ${newToken}`);
-              return api.request(error.config);
+        // if (error.response?.status === 401) {
+        //   try {
+        //     const newToken = await refreshAuthTokenFunction();
+        //     if (newToken && error.config) {
+        //       error.config.headers =
+        //         error.config.headers || new axios.AxiosHeaders();
+        //       error.config.headers.set("Authorization", `Bearer ${newToken}`);
+        //       return api.request(error.config);
+        //     }
+        //   } catch (refreshError) {
+        //     console.error("Failed to refresh token:", refreshError);
+        //     deleteCreds();
+        //     return Promise.reject(refreshError);
+        //   }
+        // }
+        const status = error.response?.status;
+        const errorCode = error.code;
+        switch (true) {
+          // Handle 401 Unauthorized
+          case status === 401:
+            Alert.alert(
+              "Unauthorized",
+              "Your session has expired. Please log in again."
+            );
+            try {
+              const newToken = await refreshAuthTokenFunction();
+              if (newToken && error.config) {
+                error.config.headers =
+                  error.config.headers || new axios.AxiosHeaders();
+                error.config.headers.set("Authorization", `Bearer ${newToken}`);
+                return api.request(error.config);
+              }
+            } catch (refreshError) {
+              console.error("Failed to refresh token:", refreshError);
+              deleteCreds();
+              return Promise.reject(refreshError);
             }
-          } catch (refreshError) {
-            console.error("Failed to refresh token:", refreshError);
-            deleteCreds();
-            return Promise.reject(refreshError);
-          }
+            break;
+
+          // Handle Timeout Error
+          case errorCode === "ECONNABORTED":
+            Alert.alert(
+              "Request Timeout",
+              "The request took too long to complete. Please try again."
+            );
+            break;
+
+          // Default case for other errors
+          default:
+            console.error("API Request Error:", error);
+            Alert.alert("Error", "An unexpected error occurred.");
+            break;
         }
+
         return Promise.reject(error);
       }
     );
@@ -296,10 +373,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         refreshToken,
         user,
         loading,
+        loadingStartUp,
         requestOtp,
         loginWithOtp,
         logout,
         apiRequest,
+        refreshAuthTokenFunction,
       }}
     >
       {children}
