@@ -1,9 +1,22 @@
-import { Text, View } from "react-native";
+import React from "react";
+import { View, Button, Text, StyleSheet } from "react-native";
+import { Link } from "expo-router";
 
-export default function SettingsScreen() {
+export default function HomeScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Welcome to the Settings Screen!</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Home Screen</Text>
+      <Link href="/home/appointmentForm">
+        hi
+      </Link>
+      <Link href="/home/availableAppointments">
+        by
+      </Link>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: "center", justifyContent: "center" },
+  title: { fontSize: 24, marginBottom: 20 },
+});

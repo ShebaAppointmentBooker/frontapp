@@ -23,13 +23,14 @@ export default function MainLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity style={styles.logout} onPress={logout}>
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          ),
+          // headerRight: () => (
+          //   <View style={styles.headerRightContainer}>
+          //     <TouchableOpacity style={styles.logout} onPress={logout}>
+          //       <Text style={styles.logoutText}>Logout</Text>
+          //     </TouchableOpacity>
+          //   </View>
+          // ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen

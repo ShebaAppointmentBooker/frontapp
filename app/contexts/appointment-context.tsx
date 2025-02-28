@@ -22,6 +22,7 @@ import { Alert } from "react-native";
 import { otpType } from "../types/otpType";
 import { useAuth } from "./auth-context";
 import { COMPLETE_APPOINTMENT_ROUTE } from "../../urlConfig/appointment-config";
+import { appointmentType } from "../types/appointmentType";
 interface User {
   id: string;
   email: string;
@@ -30,8 +31,12 @@ interface User {
 }
 // Define the Appointment context type
 interface AppointmentContextType {
-  availableAppointments: () => Promise<void>;
+  fetchAvailableAppointments: (type: string) => Promise<appointmentType[]>;
   bookingResponse: (appointmentId: string) => Promise<void>;
+  availableAppointmentsList: appointmentType[];
+  setAvailableAppointmentsList: React.Dispatch<
+    React.SetStateAction<appointmentType[]>
+  >;
 }
 
 // Create the Appointment context
@@ -41,13 +46,17 @@ const AppointmentContext = createContext<AppointmentContextType | undefined>(
 
 // Provider component
 export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
-  const { token, apiRequest } = useAuth();
-  const availableAppointments = async () => {
+  const { apiRequest } = useAuth();
+  const [availableAppointmentsList, setAvailableAppointmentsList] = useState<
+    appointmentType[]
+  >([]);
+  const fetchAvailableAppointments = async (type: string) => {
     const response = await apiRequestAppointments({
-      method: "GET",
-      url: "/available",
+      method: "POST",
+      url: "/get_available_appointments_by_type",
+      data: { type },
     });
-    return response.data;
+    return JSON.parse(response);
   };
   const bookingResponse = async (appointmentId: string) => {
     const response = await apiRequestAppointments({
@@ -67,8 +76,10 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppointmentContext.Provider
       value={{
-        availableAppointments,
+        fetchAvailableAppointments,
         bookingResponse,
+        availableAppointmentsList,
+        setAvailableAppointmentsList,
       }}
     >
       {children}
@@ -77,7 +88,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
 };
 
 // Custom hook to use the Auth context
-export const useAppointment = (): AppointmentContextType => {
+export const useAppointments = (): AppointmentContextType => {
   const context = useContext(AppointmentContext);
   if (!context) {
     throw new Error("useAppointment must be used within an AuthProvider");

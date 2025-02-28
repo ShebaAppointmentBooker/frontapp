@@ -7,10 +7,10 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Home Screen</Text>
       <Link href="/home/appointmentForm">
-        <Button title="Go to Appointment Form" />
+        book
       </Link>
       <Link href="/home/availableAppointments">
-        <Button title="View Available Appointments" />
+        by
       </Link>
     </View>
   );

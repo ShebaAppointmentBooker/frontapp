@@ -159,48 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // setLoading(false);
     }
   };
-  // Handle Login
-  // const login = async (email: string, password: string) => {
-  //   setLoading(true);
-  //   try {
-  //     // const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
-  //     //   email,
-  //     //   password,
-  //     // });
-  //     console.log(API_ENDPOINTS.patient[Actions.LOGIN]);
-  //     const response = await axios.post(API_ENDPOINTS.patient[Actions.LOGIN], {
-  //       email: "jane.smith@example.com",
-  //       password: "password123",
-  //     });
-
-  //     const { accessToken, refreshToken, user } = response.data;
-  //     setToken(accessToken);
-  //     setRefreshToken(refreshToken);
-  //     setUser(user);
-
-  //     await SecureStore.setItemAsync("token", accessToken);
-  //     await SecureStore.setItemAsync("refreshToken", refreshToken);
-  //     await SecureStore.setItemAsync("user", JSON.stringify(user));
-  //     console.log("login success!!!", accessToken, refreshToken, user);
-  //   } catch (error) {
-  //     if (axios.isAxiosError(error))
-  //       if (error.response) {
-  //         // The request was made and the server responded with a status code
-  //         // that falls out of the range of 2xx
-  //         console.error("Response error:", error.response);
-  //       } else if (error.request) {
-  //         // The request was made but no response was received
-  //         console.error("Request error:", error.request);
-  //       } else {
-  //         // Something happened in setting up the request that triggered an Error
-  //         console.error("General error:", error.message);
-  //       }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Handle Logout
+  
   const deleteCreds = async () => {
     try {
       // Clear SecureStore and reset authentication state
@@ -339,7 +298,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               }
             } catch (refreshError) {
               console.error("Failed to refresh token:", refreshError);
-              deleteCreds();
+              // deleteCreds();
               return Promise.reject(refreshError);
             }
             break;

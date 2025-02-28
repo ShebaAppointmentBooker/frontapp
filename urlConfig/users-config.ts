@@ -1,6 +1,6 @@
 // config.ts
-// export const BASE_URL_USERS = "http://192.168.1.240";
-export const BASE_URL_USERS = "http://192.168.168.38"
+export const BASE_URL_USERS = "http://192.168.1.240";
+// export const BASE_URL_USERS = "http://192.168.168.38"
 export const USERS_ROUTE="5000/users";
 export const COMPLETE_USERS_ROUTE=BASE_URL_USERS+":"+USERS_ROUTE;
 // Enum for common actions (login, logout, refreshToken)
