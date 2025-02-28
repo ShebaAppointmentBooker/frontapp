@@ -21,8 +21,12 @@ import {
 import { Alert } from "react-native";
 import { otpType } from "../types/otpType";
 import { useAuth } from "./auth-context";
-import { AppointmentActions, COMPLETE_APPOINTMENT_ROUTE } from "../../urlConfig/appointment-config";
+import {
+  AppointmentActions,
+  COMPLETE_APPOINTMENT_ROUTE,
+} from "../../urlConfig/appointment-config";
 import { appointmentType } from "../types/appointmentType";
+import { formIDs } from "../types/formIDs";
 interface User {
   id: string;
   email: string;
@@ -31,8 +35,20 @@ interface User {
 }
 // Define the Appointment context type
 interface AppointmentContextType {
-  fetchAvailableAppointments: (type: string) => Promise<appointmentType[]>;
-  fetchAllSpecializtions:() => Promise<void>;
+  fetchAvailableAppointments: ({
+    type,
+    subtype,
+    doctorId,
+    date,
+  }: {
+    type: string;
+    subtype: string|undefined;
+    doctorId: string|undefined;
+    date: string|undefined;
+  }) => Promise<appointmentType[]>;
+  fetchAllSpecializations: () => Promise<formIDs[]>;
+  fetchAllAppointmentTypes: () => Promise<formIDs[]>;
+  fetchDoctorsBySpecialization:(specializationId:string|undefined)=>Promise<formIDs[]>
   bookingResponse: (appointmentId: string) => Promise<void>;
   availableAppointmentsList: appointmentType[];
   setAvailableAppointmentsList: React.Dispatch<
@@ -51,19 +67,46 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [availableAppointmentsList, setAvailableAppointmentsList] = useState<
     appointmentType[]
   >([]);
-  const fetchAllSpecializtions = async () => {
+  const fetchAllSpecializations = async () => {
+    const response = await apiRequestAppointments({
+      method: "Get",
+      url: AppointmentActions.GET_ALL_SPECIALIZATIONS,
+    });
+    console.log(response);
+    return JSON.parse(response);
+  };
+  const fetchDoctorsBySpecialization = async (specializationId:string|undefined) => {
+    const response = await apiRequestAppointments({
+      method: "Post",
+      url: AppointmentActions.GET_DOCTORS_BY_SPECIALIZATION,
+      data:{specializationId}
+    });
+    console.log(response);
+    return JSON.parse(response);
+  };
+  const fetchAllAppointmentTypes = async () => {
     const response = await apiRequestAppointments({
       method: "Get",
       url: AppointmentActions.GET_ALL_APPOINTMENT_TYPES,
     });
-    console.log(response)
+    console.log(response);
     return JSON.parse(response);
   };
-  const fetchAvailableAppointments = async (type: string) => {
+  const fetchAvailableAppointments = async ({
+    type,
+    subtype,
+    doctorId,
+    date,
+  }: {
+    type: string;
+    subtype: string|undefined;
+    doctorId: string|undefined;
+    date: string|undefined;
+  }) => {
     const response = await apiRequestAppointments({
       method: "POST",
       url: AppointmentActions.GET_AVAILABLE_APPOINTMENTS_BY_TYPE,
-      data: { type },
+      data: { type, subtype, doctorId, date },
     });
     return JSON.parse(response);
   };
@@ -85,7 +128,9 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppointmentContext.Provider
       value={{
-        fetchAllSpecializtions,
+        fetchAllSpecializations,
+        fetchDoctorsBySpecialization,
+        fetchAllAppointmentTypes,
         fetchAvailableAppointments,
         bookingResponse,
         availableAppointmentsList,

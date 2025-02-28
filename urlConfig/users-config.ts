@@ -9,7 +9,7 @@ export enum UserActions { // Add the `export` keyword here
   LOGINOTP = "loginotp",
   // LOGIN = "login",
   LOGOUT = "logout",
-  REFRESH_TOKEN = "refresh-token",
+  REFRESH_TOKEN = "refreshtoken",
   VERIFY="verify"
 }
 

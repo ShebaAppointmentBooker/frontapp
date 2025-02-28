@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useRef,
 } from "react";
 import axios, {
   AxiosError,
@@ -54,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<string | null>(null);
   const [loadingStartUp, setLoadingStartUp] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const refreshCallCounter = useRef(0);
 
   useEffect(() => {
     const verifyToken = async (refreshToken: string | null) => {
@@ -110,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorCode = error.code;
-        console.log(error.code)
+        console.log(error.code);
         if (errorCode === "ECONNABORTED")
           Alert.alert(
             "Request Timeout",
@@ -159,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // setLoading(false);
     }
   };
-  
+
   const deleteCreds = async () => {
     try {
       // Clear SecureStore and reset authentication state
@@ -170,6 +172,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(null);
       setRefreshToken(null);
       setUser(null);
+      refreshCallCounter.current=0;
     } catch (error) {
       console.error("Error during logout cleanup:", error);
     }
@@ -177,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       if (token) {
-        console.log(API_ENDPOINTS.patient[UserActions.LOGOUT], refreshToken);
+      
         await axios.post(
           API_ENDPOINTS.patient[UserActions.LOGOUT],
           { refreshToken },
@@ -200,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshAuthTokenFunction = async () => {
     if (!refreshToken) {
       console.error("No refresh token available");
-      await logout();
+      // await logout();
       return null;
     }
 
@@ -212,8 +215,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
         { timeout: 10000 }
       );
-
-      const { token: newToken, refreshToken: newRefreshToken } = response.data;
+      console.log("refreshed from func");
+      const { accessToken: newToken, refreshToken: newRefreshToken } = response.data;
 
       setToken(newToken);
       setRefreshToken(newRefreshToken);
@@ -223,9 +226,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return newToken;
     } catch (error) {
-      
       console.error("Error refreshing token:", error);
-      await logout();
+      // await logout();
       return null;
     }
   };
@@ -262,38 +264,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     api.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // ✅ Check if status is in the 2xx range
+        if (response.status >= 200 && response.status < 300) {
+          refreshCallCounter.current=0;
+        }
+        return response;
+      },
       async (error: AxiosError) => {
-        // if (error.response?.status === 401) {
-        //   try {
-        //     const newToken = await refreshAuthTokenFunction();
-        //     if (newToken && error.config) {
-        //       error.config.headers =
-        //         error.config.headers || new axios.AxiosHeaders();
-        //       error.config.headers.set("Authorization", `Bearer ${newToken}`);
-        //       return api.request(error.config);
-        //     }
-        //   } catch (refreshError) {
-        //     console.error("Failed to refresh token:", refreshError);
-        //     deleteCreds();
-        //     return Promise.reject(refreshError);
-        //   }
-        // }
+        
+        if (refreshCallCounter.current > 2) {
+          console.log("tried refreshing too many times")
+          logout();
+          return;
+        }
         const status = error.response?.status;
         const errorCode = error.code;
         switch (true) {
           // Handle 401 Unauthorized
           case status === 401:
-            Alert.alert(
-              "Unauthorized",
-              "Your session has expired. Please log in again."
-            );
+            // Alert.alert(
+            //   "Unauthorized",
+            //   "Your session has expired. Please log in again."
+            // );
             try {
+              console.log("refreshing");
               const newToken = await refreshAuthTokenFunction();
+              console.log("refreshed");
               if (newToken && error.config) {
+                refreshCallCounter.current++;
                 error.config.headers =
                   error.config.headers || new axios.AxiosHeaders();
                 error.config.headers.set("Authorization", `Bearer ${newToken}`);
+                console.log(error.config,"new token: ",newToken);
                 return api.request(error.config);
               }
             } catch (refreshError) {
