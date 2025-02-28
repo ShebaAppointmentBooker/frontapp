@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Button, StyleSheet, TextInput, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppointments } from "../../contexts/appointment-context";
@@ -6,8 +6,11 @@ import { useAppointments } from "../../contexts/appointment-context";
 export default function AppointmentForm() {
   const router = useRouter();
   const [appointmentType, setAppointmentType] = useState<string>("");
-  const { fetchAvailableAppointments,setAvailableAppointmentsList } = useAppointments();
-
+  const { fetchAvailableAppointments,setAvailableAppointmentsList,fetchAllSpecializtions } = useAppointments();
+  useEffect(()=>{
+    console.log("fetching")
+    fetchAllSpecializtions()
+  },[])
   const handleSubmit = async () => {
     if (!appointmentType.trim()) {
       Alert.alert("Validation Error", "Appointment type cannot be empty.");

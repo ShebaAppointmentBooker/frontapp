@@ -21,7 +21,7 @@ import {
 import { Alert } from "react-native";
 import { otpType } from "../types/otpType";
 import { useAuth } from "./auth-context";
-import { COMPLETE_APPOINTMENT_ROUTE } from "../../urlConfig/appointment-config";
+import { AppointmentActions, COMPLETE_APPOINTMENT_ROUTE } from "../../urlConfig/appointment-config";
 import { appointmentType } from "../types/appointmentType";
 interface User {
   id: string;
@@ -32,6 +32,7 @@ interface User {
 // Define the Appointment context type
 interface AppointmentContextType {
   fetchAvailableAppointments: (type: string) => Promise<appointmentType[]>;
+  fetchAllSpecializtions:() => Promise<void>;
   bookingResponse: (appointmentId: string) => Promise<void>;
   availableAppointmentsList: appointmentType[];
   setAvailableAppointmentsList: React.Dispatch<
@@ -50,10 +51,18 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [availableAppointmentsList, setAvailableAppointmentsList] = useState<
     appointmentType[]
   >([]);
+  const fetchAllSpecializtions = async () => {
+    const response = await apiRequestAppointments({
+      method: "Get",
+      url: AppointmentActions.GET_ALL_APPOINTMENT_TYPES,
+    });
+    console.log(response)
+    return JSON.parse(response);
+  };
   const fetchAvailableAppointments = async (type: string) => {
     const response = await apiRequestAppointments({
       method: "POST",
-      url: "/get_available_appointments_by_type",
+      url: AppointmentActions.GET_AVAILABLE_APPOINTMENTS_BY_TYPE,
       data: { type },
     });
     return JSON.parse(response);
@@ -76,6 +85,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppointmentContext.Provider
       value={{
+        fetchAllSpecializtions,
         fetchAvailableAppointments,
         bookingResponse,
         availableAppointmentsList,

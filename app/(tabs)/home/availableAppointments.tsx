@@ -19,15 +19,15 @@ export default function AvailableAppointments() {
     // console.log(item)
     return(
     <View style={styles.card}>
-      <Text style={styles.date}>
+      <Text selectable style={styles.date}>
         {new Date(item.date).toLocaleDateString()} -{" "}
         {new Date(item.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </Text>
-      <Text style={styles.text}>
+      <Text selectable style={styles.text}>
         Doctor: {item.doctor.name} ({item.doctor.email})
       </Text>
-      <Text style={styles.text}>Specialization: {item.specialization}</Text>
-      <Text style={styles.text}>Type: {item.appointmentType}</Text>
+      <Text selectable style={styles.text}>Specialization: {item.specialization}</Text>
+      <Text selectable style={styles.text}>Type: {item.appointmentType}</Text>
       <TouchableOpacity
         style={styles.bookButton}
         onPress={() => Alert.alert("Book Appointment", "Booking feature not implemented yet!")}

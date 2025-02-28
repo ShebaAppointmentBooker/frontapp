@@ -5,12 +5,20 @@ export const APPOINTMENT_ROUTE="5001/appointments";
 export const COMPLETE_APPOINTMENT_ROUTE=BASE_URL_APPOINTMENTS+":"+APPOINTMENT_ROUTE;
 // Enum for common actions (login, logout, refreshToken)
 export enum AppointmentActions {
-  GET_ALL_APPOINTMENT_TYPES = `${COMPLETE_APPOINTMENT_ROUTE}/get_all_appointment_types`,
-  GET_ALL_SPECIALIZATIONS = `${COMPLETE_APPOINTMENT_ROUTE}/get_all_specializations`,
-  GET_USER_APPOINTMENTS = `${COMPLETE_APPOINTMENT_ROUTE}/get_user_appointments`,
-  GET_AVAILABLE_APPOINTMENTS_BY_TYPE = `${COMPLETE_APPOINTMENT_ROUTE}/get_available_appointments_by_type`,
-  BOOK_APPOINTMENT = `${COMPLETE_APPOINTMENT_ROUTE}/book_appointment`,
-  CANCEL_APPOINTMENT=`${COMPLETE_APPOINTMENT_ROUTE}/cancel_appointment`
+  GET_ALL_APPOINTMENT_TYPES = `/get_all_appointment_types`,
+  GET_ALL_SPECIALIZATIONS = `/get_all_specializations`,
+  GET_USER_APPOINTMENTS = `/get_user_appointments`,
+  GET_AVAILABLE_APPOINTMENTS_BY_TYPE = `/get_available_appointments_by_type`,
+  BOOK_APPOINTMENT = `/book_appointment`,
+  CANCEL_APPOINTMENT=`/cancel_appointment`
+}
+export enum CompleteAppointmentActions {
+  GET_ALL_APPOINTMENT_TYPES = `${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.GET_ALL_APPOINTMENT_TYPES}`,
+  GET_ALL_SPECIALIZATIONS = `${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.GET_ALL_SPECIALIZATIONS}`,
+  GET_USER_APPOINTMENTS = `${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.GET_USER_APPOINTMENTS}`,
+  GET_AVAILABLE_APPOINTMENTS_BY_TYPE = `${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.GET_AVAILABLE_APPOINTMENTS_BY_TYPE}`,
+  BOOK_APPOINTMENT = `${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.BOOK_APPOINTMENT}`,
+  CANCEL_APPOINTMENT=`${COMPLETE_APPOINTMENT_ROUTE}${AppointmentActions.CANCEL_APPOINTMENT}`
 }
 
 
