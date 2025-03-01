@@ -2,16 +2,11 @@ import React from "react";
 import { Stack } from "expo-router";
 import { TouchableOpacity, View,StyleSheet,Text } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
-import { useNavigationState, useRoute } from "@react-navigation/native";
-import { useSegments } from 'expo-router';
+
 
 
 export default function HomeLayout() {
   const { logout, token } = useAuth();
-  const route = useRoute();
-  const routes = useNavigationState((state) => state?.routes || []);
-  console.log("the home route ",routes)
-  const segment = useSegments();
   return (
     <Stack>
       <Stack.Screen
