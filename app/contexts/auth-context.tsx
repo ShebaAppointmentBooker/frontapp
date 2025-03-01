@@ -51,6 +51,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const tokenRef = useRef<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [user, setUser] = useState<string | null>(null);
   const [loadingStartUp, setLoadingStartUp] = useState<boolean>(true);
@@ -81,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           await verifyToken(storedRefreshToken);
           console.log("verfied " + user);
           setToken(storedToken);
+          tokenRef.current=storedToken;
           setRefreshToken(storedRefreshToken);
           setUser(storedUser);
         }
@@ -142,6 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { accessToken, refreshToken } = response.data;
       console.log(response.data);
       setToken(accessToken);
+      tokenRef.current=accessToken
       setRefreshToken(refreshToken);
       await SecureStore.setItemAsync("token", accessToken);
       await SecureStore.setItemAsync("refreshToken", refreshToken);
@@ -170,21 +173,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await SecureStore.deleteItemAsync("user");
 
       setToken(null);
+      tokenRef.current=null
       setRefreshToken(null);
       setUser(null);
-      refreshCallCounter.current=0;
+      refreshCallCounter.current = 0;
     } catch (error) {
       console.error("Error during logout cleanup:", error);
     }
   };
   const logout = async () => {
     try {
-      if (token) {
-      
+      console.log("logging out")
+      if (tokenRef.current) {
         await axios.post(
           API_ENDPOINTS.patient[UserActions.LOGOUT],
           { refreshToken },
-          { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 }
+          { headers: { Authorization: `Bearer ${tokenRef.current}` }, timeout: 10000 }
         );
       }
     } catch (error: any) {
@@ -216,9 +220,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { timeout: 10000 }
       );
       console.log("refreshed from func");
-      const { accessToken: newToken, refreshToken: newRefreshToken } = response.data;
+      const { accessToken: newToken, refreshToken: newRefreshToken } =
+        response.data;
 
       setToken(newToken);
+      tokenRef.current=newToken;
       setRefreshToken(newRefreshToken);
 
       await SecureStore.setItemAsync("token", newToken);
@@ -255,8 +261,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     api.interceptors.request.use(
       (requestConfig: InternalAxiosRequestConfig) => {
-        if (token) {
-          requestConfig.headers.Authorization = `Bearer ${token}`;
+        if (tokenRef.current) {
+          requestConfig.headers.Authorization = `Bearer ${tokenRef.current}`;
         }
         return requestConfig;
       },
@@ -267,15 +273,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (response) => {
         // ✅ Check if status is in the 2xx range
         if (response.status >= 200 && response.status < 300) {
-          refreshCallCounter.current=0;
+          refreshCallCounter.current = 0;
         }
         return response;
       },
       async (error: AxiosError) => {
-        
         if (refreshCallCounter.current > 2) {
-          console.log("tried refreshing too many times")
-          logout();
+          console.log("tried refreshing too many times");
+          // logout();
           return;
         }
         const status = error.response?.status;
@@ -295,9 +300,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 refreshCallCounter.current++;
                 error.config.headers =
                   error.config.headers || new axios.AxiosHeaders();
-                error.config.headers.set("Authorization", `Bearer ${newToken}`);
-                console.log(error.config,"new token: ",newToken);
-                return api.request(error.config);
+                console.log(
+                  error.config,
+                  "new token: ",
+                  `Bearer ${newToken}`,
+                  "old token: ",
+                  error.config.headers["Authorization"],
+                  " ",
+                  `Bearer ${newToken}` === error.config.headers["Authorization"]
+                );
+                // error.config.headers.set("Authorization", `Bearer ${newToken}`);
+                const newRequestConfig: AxiosRequestConfig = {
+                  ...error.config,
+                  headers: {
+                    ...error.config.headers,
+                    Authorization: `Bearer ${newToken}`,
+                  },
+                };
+                console.log(
+                  error.config,
+                  "new token: ",
+                  `Bearer ${newToken}`,
+                  "old token: ",
+                  error.config.headers["Authorization"],
+                  " ",
+                  `Bearer ${newToken}` === error.config.headers["Authorization"]
+                );
+                return api.request(newRequestConfig);
               }
             } catch (refreshError) {
               console.error("Failed to refresh token:", refreshError);

@@ -7,10 +7,13 @@ import {
   Alert,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppointments } from "../../contexts/appointment-context";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { formIDs } from "@/app/types/formIDs";
 
@@ -20,6 +23,7 @@ export default function AppointmentForm() {
   const [subtype, setSubtype] = useState<string>("");
   const [doctorId, setDoctorId] = useState<string>("");
   const [date, setDate] = useState<Date | null>(null);
+  const [noTime, setNoTime] = useState<boolean>(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectDoctor, setSelectDoctor] = useState<boolean>(false);
   const [doctors, setDoctors] = useState<formIDs[]>([]);
@@ -56,6 +60,7 @@ export default function AppointmentForm() {
       return;
     }
     try {
+      console.log(date?.toDateString(),date?.toISOString())
       const payload = {
         type: appointmentType.trim(),
         subtype: subtype ? subtype.trim() : undefined,
@@ -68,7 +73,7 @@ export default function AppointmentForm() {
 
       if (response.length > 0) {
         setAvailableAppointmentsList(response);
-        router.replace("/home/availableAppointments");
+        router.navigate("/home/availableAppointments");
       }
     } catch (error: any) {
       console.error(
@@ -78,21 +83,61 @@ export default function AppointmentForm() {
       Alert.alert("Error", "Failed to fetch available appointments.");
     }
   };
+  const handleDatePressAndroid = () => {
+    DateTimePickerAndroid.open({
+      value: date || new Date(),
+      mode: "date",
+      onChange: (event, selectedDate) => {
+        if (selectedDate) {
+          setDate(new Date(selectedDate.setHours(10, 0, 0, 0)));
+          // if (noTime) {
+          //   setDate(new Date(selectedDate.setHours(0, 0, 0, 0))); // Save only the date
+          // } else {
+          //   DateTimePickerAndroid.open({
+          //     value: selectedDate,
+          //     mode: "time",
+          //     onChange: (event, selectedTime) => {
+          //       if (selectedTime) {
+          //         const finalDate = new Date(
+          //           selectedDate.getFullYear(),
+          //           selectedDate.getMonth(),
+          //           selectedDate.getDate(),
+          //           selectedTime.getHours(),
+          //           selectedTime.getMinutes()
+          //         );
+          //         setDate(finalDate);
+          //       }
+          //     },
+          //   });
+          // }
+        }
+      },
+    });
+  };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
+    if (Platform.OS === "android") {
+      setShowDatePicker(false); // Must close manually on Android
+    }
     if (selectedDate) {
       setDate(selectedDate);
     }
   };
 
-  const handleFetchDoctors = async () => {
+  const handleFetchDoctors = async (appointmentType: string) => {
     try {
       if (appointmentType) {
         const doctorsData = await fetchDoctorsBySpecialization(appointmentType);
-        setDoctors(doctorsData);
+        const transformedDoctors = doctorsData.map((doctor) => ({
+          id: doctor._id,
+          name: doctor.name,
+        }));
+        setDoctors(transformedDoctors);
       } else {
-        Alert.alert("Validation Error", "Please select a specialization first.");
+        Alert.alert(
+          "Validation Error",
+          "Please select a specialization first."
+        );
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -103,7 +148,8 @@ export default function AppointmentForm() {
     setAppointmentType(value);
     setDoctors([]); // Clear the doctors when specialization changes
     setDoctorId(""); // Reset selected doctor
-    setSelectDoctor(false); // Deselect doctor option
+    // setSelectDoctor(false); // Deselect doctor option
+    if (value !== "no type") handleFetchDoctors(value);
   };
 
   return (
@@ -117,7 +163,7 @@ export default function AppointmentForm() {
           selectedValue={appointmentType}
           onValueChange={handleSpecializationChange}
         >
-          <Picker.Item label="Select Specialization" value="" />
+          <Picker.Item label="Select Specialization" value="no type" />
           {specializations.map((spec) => (
             <Picker.Item key={spec.id} label={spec.name} value={spec.id} />
           ))}
@@ -129,9 +175,12 @@ export default function AppointmentForm() {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={subtype}
-          onValueChange={(value) => setSubtype(value)}
+          onValueChange={(value) => {
+            setSubtype(value === "no type" ? "" : value);
+            console.log("value", value);
+          }}
         >
-          <Picker.Item label="Select Subtype (Optional)" value="" />
+          <Picker.Item label="Select Subtype (Optional)" value="no type" />
           {appointmentTypes.map((type) => (
             <Picker.Item key={type.id} label={type.name} value={type.id} />
           ))}
@@ -139,8 +188,8 @@ export default function AppointmentForm() {
       </View>
 
       {/* Doctor Selection */}
-      <Text style={styles.label}>Select Doctor (Optional):</Text>
-      <View style={styles.radioContainer}>
+
+      {/* <View style={styles.radioContainer}>
         <TouchableOpacity
           style={[
             styles.radioButton,
@@ -156,36 +205,66 @@ export default function AppointmentForm() {
           }}
           disabled={!appointmentType}
         >
-          <Text>
-            {selectDoctor ? "Deselect Doctor" : "Select Doctor"}
-          </Text>
+          <Text>{selectDoctor ? "Deselect Doctor" : "Select Doctor"}</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
-      {selectDoctor && doctors.length > 0 && (
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={doctorId}
-            onValueChange={(value) => setDoctorId(value)}
-          >
-            <Picker.Item label="Select Doctor" value="" />
-            {doctors.map((doctor) => (
-              <Picker.Item key={doctor.id} label={doctor.name} value={doctor.id} />
-            ))}
-          </Picker>
-        </View>
+      {doctors.length > 0 && (
+        <>
+          <Text style={styles.label}>Select Doctor (Optional):</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={doctorId}
+              onValueChange={(value) =>
+                setDoctorId(value === "no type" ? "" : value)
+              }
+            >
+              <Picker.Item label="Select Doctor" value="no type" />
+              {doctors.map((doctor) => (
+                <Picker.Item
+                  key={doctor.id}
+                  label={doctor.name}
+                  value={doctor.id}
+                />
+              ))}
+            </Picker>
+          </View>
+        </>
       )}
 
       {/* Date Picker */}
       <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        style={styles.dateButton}
+        style={styles.radioButton}
+        onPress={() => {
+          setNoTime(!noTime);
+          if (noTime) setDate(null); // Reset date when unchecking
+        }}
       >
-        <Text style={styles.dateButtonText}>
-          {date ? date.toLocaleString() : "Pick a Date & Time"}
-        </Text>
+        <Text>{noTime ? "✓ No Date Selected" : "Select No Date"}</Text>
       </TouchableOpacity>
-      {showDatePicker && (
+      {!noTime ? (
+        Platform.OS === "ios" ? (
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.dateButton}
+          >
+            <Text style={styles.dateButtonText}>
+              {date ? date.toLocaleString().split(",")[0] : "Pick a Date"}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={handleDatePressAndroid}
+            style={styles.dateButton}
+          >
+            <Text style={styles.dateButtonText}>
+            {date ? date.toLocaleString().split(",")[0] : "Pick a Date"}
+            </Text>
+          </TouchableOpacity>
+        )
+      ) : null}
+
+      {showDatePicker && Platform.OS === "ios" && (
         <DateTimePicker
           value={date || new Date()}
           mode="datetime"

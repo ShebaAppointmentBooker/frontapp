@@ -48,7 +48,7 @@ interface AppointmentContextType {
   }) => Promise<appointmentType[]>;
   fetchAllSpecializations: () => Promise<formIDs[]>;
   fetchAllAppointmentTypes: () => Promise<formIDs[]>;
-  fetchDoctorsBySpecialization:(specializationId:string|undefined)=>Promise<formIDs[]>
+  fetchDoctorsBySpecialization:(specializationId:string|undefined)=>Promise<any[]>
   bookingResponse: (appointmentId: string) => Promise<void>;
   availableAppointmentsList: appointmentType[];
   setAvailableAppointmentsList: React.Dispatch<

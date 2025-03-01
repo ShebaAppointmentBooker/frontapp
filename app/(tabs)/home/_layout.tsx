@@ -12,7 +12,9 @@ export default function HomeLayout() {
           title: "home",
           headerRight: () => (
             <View style={styles.headerRightContainer}>
-              <TouchableOpacity style={styles.logout} onPress={logout}>
+              <TouchableOpacity style={styles.logout} onPress={()=>{
+                console.log("hi")
+                logout()}}>
                 <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
             </View>
