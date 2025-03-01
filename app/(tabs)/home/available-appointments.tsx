@@ -14,7 +14,7 @@ import { useAppointments } from "../../contexts/appointment-context";
 export default function AvailableAppointments() {
   const router = useRouter();
   const { availableAppointmentsList } = useAppointments();
-  useEffect(()=>{console.log(availableAppointmentsList[2])},[availableAppointmentsList])
+  // useEffect(()=>{console.log(availableAppointmentsList[2])},[availableAppointmentsList])
   const renderAppointment = ({ item }: any) =>{
     // console.log(item)
     return(

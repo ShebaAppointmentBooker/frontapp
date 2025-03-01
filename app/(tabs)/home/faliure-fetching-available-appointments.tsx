@@ -1,16 +1,10 @@
 import React from "react";
 import { View, Button, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
-
-export default function HomeScreen() {
+import OperationFailurePage from "../../components/faliure-page";
+export default function FailiureFetchingAvailableAppointments() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
-      <Link href="/home/appointment-form">
-        book
-      </Link>
-      
-    </View>
+    <OperationFailurePage messege="We couldnt find Appointments matching your details" />
   );
 }
 

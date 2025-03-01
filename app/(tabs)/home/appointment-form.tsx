@@ -59,29 +59,33 @@ export default function AppointmentForm() {
       Alert.alert("Validation Error", "Appointment type cannot be empty.");
       return;
     }
-    try {
-      console.log(date?.toDateString(),date?.toISOString())
-      const payload = {
-        type: appointmentType.trim(),
-        subtype: subtype ? subtype.trim() : undefined,
-        doctorId: doctorId ? doctorId.trim() : undefined,
-        date: date ? date.toISOString() : undefined,
-      };
+    // try {
+    //   console.log(date?.toDateString(),date?.toISOString())
+    const payload = {
+      type: appointmentType.trim(),
+      subtype: subtype ? subtype.trim() : undefined,
+      doctorId: doctorId ? doctorId.trim() : undefined,
+      date: date ? date.toISOString() : undefined,
+    };
 
-      console.log("Fetching available appointments with payload:", payload);
-      const response = await fetchAvailableAppointments(payload);
+    // console.log("Fetching available appointments with payload:", payload);
+    router.push({
+      pathname: "/home/loading-available-appointments",
+      params: payload,
+    });
+    // const response = await fetchAvailableAppointments(payload);
 
-      if (response.length > 0) {
-        setAvailableAppointmentsList(response);
-        router.navigate("/home/availableAppointments");
-      }
-    } catch (error: any) {
-      console.error(
-        "Error fetching available appointments:",
-        error?.response?.data
-      );
-      Alert.alert("Error", "Failed to fetch available appointments.");
-    }
+    // if (response.length > 0) {
+    //   setAvailableAppointmentsList(response);
+    //   router.navigate("/home/available-appointments");
+    // }
+    // } catch (error: any) {
+    //   console.error(
+    //     "Error fetching available appointments:",
+    //     error?.response?.data
+    //   );
+    //   Alert.alert("Error", "Failed to fetch available appointments.");
+    // }
   };
   const handleDatePressAndroid = () => {
     DateTimePickerAndroid.open({
@@ -177,7 +181,7 @@ export default function AppointmentForm() {
           selectedValue={subtype}
           onValueChange={(value) => {
             setSubtype(value === "no type" ? "" : value);
-            console.log("value", value);
+            // console.log("value", value);
           }}
         >
           <Picker.Item label="Select Subtype (Optional)" value="no type" />
@@ -258,7 +262,7 @@ export default function AppointmentForm() {
             style={styles.dateButton}
           >
             <Text style={styles.dateButtonText}>
-            {date ? date.toLocaleString().split(",")[0] : "Pick a Date"}
+              {date ? date.toLocaleString().split(",")[0] : "Pick a Date"}
             </Text>
           </TouchableOpacity>
         )

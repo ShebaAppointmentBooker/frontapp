@@ -2,8 +2,16 @@ import React from "react";
 import { Stack } from "expo-router";
 import { TouchableOpacity, View,StyleSheet,Text } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
+import { useNavigationState, useRoute } from "@react-navigation/native";
+import { useSegments } from 'expo-router';
+
+
 export default function HomeLayout() {
   const { logout, token } = useAuth();
+  const route = useRoute();
+  const routes = useNavigationState((state) => state?.routes || []);
+  console.log("the home route ",routes)
+  const segment = useSegments();
   return (
     <Stack>
       <Stack.Screen
@@ -22,11 +30,19 @@ export default function HomeLayout() {
         }}
       />
       <Stack.Screen
-        name="appointmentForm"
+        name="appointment-form"
         options={{ title: "Appointment Form" }}
       />
       <Stack.Screen
-        name="availableAppointments"
+        name="available-appointments"
+        options={{ title: "Available Appointments" }}
+      />
+      <Stack.Screen
+        name="loading-available-appointments"
+        options={{  headerShown: false }}
+      />
+      <Stack.Screen
+        name="faliure-fetching-available-appointments"
         options={{ title: "Available Appointments" }}
       />
     </Stack>
