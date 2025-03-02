@@ -5,16 +5,16 @@ import OperationFailurePage from "../../components/faliure-page";
 
 
 type FailiureOperationProps = {
-  messege: string;
+  message: string;
 };
 export default function FailiureOperation() {
-  const { messege } = useLocalSearchParams() as FailiureOperationProps;
+  const { message } = useLocalSearchParams() as FailiureOperationProps;
  
   
   return (
     <OperationFailurePage
-      messege={
-        messege ? messege : "We couldnt find Appointments matching your details"
+    message={
+      message ? message : "Operation Failed"
       }
       
     />

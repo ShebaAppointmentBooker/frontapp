@@ -4,11 +4,11 @@ import { FontAwesome } from "@expo/vector-icons"; // Using FontAwesome for the c
 import { useRouter } from "expo-router";
 
 type OperationSuccessfulPageProps = {
-  messege: string;
+  message: string;
   goBackCallback?: () => void;
 };
 const OperationSuccessfulPage: FC<OperationSuccessfulPageProps> = ({
-  messege,
+  message,
   goBackCallback,
 }) => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const OperationSuccessfulPage: FC<OperationSuccessfulPageProps> = ({
       <FontAwesome name="check-circle" size={100} color="green" />
       <Text style={styles.title}>Operation Successful</Text>
       <Text style={styles.message}>
-        {messege ? messege : "Your operation was completed successfully."}
+        {message ? message : "Your operation was completed successfully."}
       </Text>
       <Button
         title="Go Back"

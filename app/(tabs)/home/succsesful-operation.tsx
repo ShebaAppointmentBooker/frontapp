@@ -5,18 +5,16 @@ import OperationSuccessfulPage from "@/app/components/succsses-page";
 import { useAppointments } from "../../contexts/appointment-context";
 import { useRouter } from "expo-router";
 type SuccsessfulOperationProps = {
-  messege: string;
+  message: string;
 };
 export default function SuccsessfulOperation() {
-  const { messege } = useLocalSearchParams() as SuccsessfulOperationProps;
+  const { message } = useLocalSearchParams() as SuccsessfulOperationProps;
   const router = useRouter();
   const { setAvailableAppointmentsList } = useAppointments();
-
+  
   return (
     <OperationSuccessfulPage
-      messege={
-        messege ? messege : "We couldnt find Appointments matching your details"
-      }
+    message={message ? message : "operation successful"}
       goBackCallback={() => {
         setAvailableAppointmentsList([]);
         router.replace("/");

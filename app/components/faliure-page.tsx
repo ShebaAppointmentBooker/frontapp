@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, Button } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 type OperationSuccessfulPageProps = {
-  messege?: string;
+  message?: string;
   goBackCallback?: () => void;
 };
 const OperationFailurePage: FC<OperationSuccessfulPageProps> = ({
-  messege = "",
+  message = "",
   goBackCallback
 }) => {
   const router = useRouter();
@@ -16,7 +16,7 @@ const OperationFailurePage: FC<OperationSuccessfulPageProps> = ({
       <FontAwesome name="times-circle" size={100} color="red" />
       <Text style={styles.title}>Operation Failed</Text>
       <Text style={styles.message}>
-        {messege ? messege : "Something went wrong. Please try again."}
+        {message ? message : "Something went wrong. Please try again."}
       </Text>
       <Button
         title="Go Back"
