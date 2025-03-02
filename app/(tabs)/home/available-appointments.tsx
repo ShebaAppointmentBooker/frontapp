@@ -16,10 +16,14 @@ export default function AvailableAppointments() {
   const router = useRouter();
   const { availableAppointmentsList, bookAppointment } = useAppointments();
   // useEffect(()=>{console.log(availableAppointmentsList[2])},[availableAppointmentsList])
-  const handleFetchDoctors = async (appointmentId: string) => {
+  const handleBooking = async (appointmentId: string) => {
     try {
       if (appointmentId) {
-        const bookingResponse = await bookAppointment(appointmentId);
+        router.push({
+          pathname: "/home/loading-booking-appointment",
+          params: {appointmentId},
+        });
+        
       } else {
         Alert.alert(
           "Validation Error",
@@ -27,7 +31,7 @@ export default function AvailableAppointments() {
         );
       }
     } catch (error) {
-      console.error("Error fetching doctors:", error);
+      // console.error("Error fetching doctors:", error);
     }
   };
   const renderAppointment = (item: appointmentType) => {
@@ -52,7 +56,7 @@ export default function AvailableAppointments() {
         </Text>
         <TouchableOpacity
           style={styles.bookButton}
-          onPress={() => handleFetchDoctors(item.appointmentId)}
+          onPress={() => handleBooking(item.appointmentId)}
         >
           <Text style={styles.bookButtonText}>Book</Text>
         </TouchableOpacity>

@@ -280,7 +280,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (error: AxiosError) => {
         if (refreshCallCounter.current > 2) {
           console.log("tried refreshing too many times");
-          // logout();
+          logout();
           return;
         }
         const status = error.response?.status;
@@ -346,7 +346,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Default case for other errors
           default:
             console.error("API Request Error:", error);
-            Alert.alert("Error", "An unexpected error occurred.");
+            // Alert.alert("Error", "An unexpected error occurred.");
             break;
         }
 

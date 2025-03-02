@@ -4,9 +4,11 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 type OperationSuccessfulPageProps = {
   messege?: string;
+  goBackCallback?: () => void;
 };
 const OperationFailurePage: FC<OperationSuccessfulPageProps> = ({
-  messege="",
+  messege = "",
+  goBackCallback
 }) => {
   const router = useRouter();
   return (
@@ -16,7 +18,10 @@ const OperationFailurePage: FC<OperationSuccessfulPageProps> = ({
       <Text style={styles.message}>
         {messege ? messege : "Something went wrong. Please try again."}
       </Text>
-      <Button title="Go Back" onPress={() => router.back()} />
+      <Button
+        title="Go Back"
+        onPress={() => (goBackCallback ? goBackCallback() : router.back())}
+      />
     </View>
   );
 };

@@ -37,8 +37,16 @@ export default function HomeLayout() {
         options={{  headerShown: false }}
       />
       <Stack.Screen
-        name="faliure-fetching-available-appointments"
-        options={{ title: "Available Appointments" }}
+        name="loading-booking-appointment"
+        options={{  headerShown: false }}
+      />
+      <Stack.Screen
+        name="succsesful-operation"
+        options={{  headerShown: false }}
+      />
+      <Stack.Screen
+        name="faliure-operation"
+        options={{ headerShown: false }}
       />
     </Stack>
   );

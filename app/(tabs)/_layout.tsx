@@ -21,6 +21,9 @@ export default function MainLayout() {
         options={{
           tabBarStyle:
             segment[2] === "loading-available-appointments"
+            || segment[2] === "loading-booking-appointment"
+            || segment[2] === "succsesful-operation"
+            || segment[2] === "faliure-operation"
               ? { display: "none" } // Hide tab bar
               : {},
           title: "Home",

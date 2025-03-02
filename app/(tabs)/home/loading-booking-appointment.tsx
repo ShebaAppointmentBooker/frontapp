@@ -5,18 +5,14 @@ import { BackHandler } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useAppointments } from "../../contexts/appointment-context";
 import { useLocalSearchParams } from "expo-router";
-type LoadingAvailableAppointmentsProps = {
-  type: string;
-  subtype: string | undefined;
-  doctorId: string | undefined;
-  date: string | undefined;
+type LoadingBookingAppointmentProps = {
+  appointmentId: string;
 };
-const LoadingAvailableAppointments = () => {
-  const { type, subtype, doctorId, date } =
-    useLocalSearchParams() as LoadingAvailableAppointmentsProps;
+const LoadingBookingAppointment = () => {
+  const { appointmentId } =
+    useLocalSearchParams() as LoadingBookingAppointmentProps;
   const router = useRouter();
-  const { fetchAvailableAppointments, setAvailableAppointmentsList } =
-    useAppointments();
+  const { bookAppointment } = useAppointments();
   useEffect(() => {
     const backAction = () => {
       return true; // Prevents going back
@@ -29,27 +25,17 @@ const LoadingAvailableAppointments = () => {
     );
     const handleSubmit = async () => {
       try {
-        const payload = {
-          type: type,
-          subtype: subtype,
-          doctorId: doctorId,
-          date: date,
-        };
-
+        console.log(appointmentId);
         // console.log("Fetching available appointments with payload:", payload);
-        const response = await fetchAvailableAppointments(payload);
+        const bookingResponse = await bookAppointment(appointmentId);
 
-        if (response.length > 0) {
-          setAvailableAppointmentsList(response);
-          router.replace("/home/available-appointments");
-        } else {
-          router.replace({
-            pathname: "/home/faliure-operation",
-            params: {
-              message: "No Appointments Found",
-            },
-          });
-        }
+        router.replace({
+          pathname: "/home/succsesful-operation",
+          params: {
+            message:
+              "you can watch the new appointments in your appointments list at the home page",
+          },
+        });
       } catch (error: any) {
         console.error(
           "Error fetching available appointments:",
@@ -104,4 +90,4 @@ const styles = StyleSheet.create({
   dot: { fontSize: 40, color: "#000", marginHorizontal: 5 },
   link: { fontSize: 18, color: "blue", marginTop: 20 },
 });
-export default LoadingAvailableAppointments;
+export default LoadingBookingAppointment;
