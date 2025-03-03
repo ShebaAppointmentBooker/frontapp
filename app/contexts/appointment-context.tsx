@@ -50,6 +50,8 @@ interface AppointmentContextType {
   fetchAllAppointmentTypes: () => Promise<formIDs[]>;
   fetchDoctorsBySpecialization:(specializationId:string|undefined)=>Promise<any[]>
   bookAppointment: (appointmentId: string) => Promise<void>;
+  getPatientAppointments: (happened: boolean) => Promise<appointmentType[]>;
+  
   availableAppointmentsList: appointmentType[];
   setAvailableAppointmentsList: React.Dispatch<
     React.SetStateAction<appointmentType[]>
@@ -118,6 +120,15 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     });
     return response.data;
   };
+  const getPatientAppointments = async (happened: boolean) => {
+    const response = await apiRequestAppointments({
+      method: "POST",
+      url: AppointmentActions.GET_PATIENT_APPOINTMENTS,
+      data: { happened },
+    });
+    // console.log("happened:",happened,response)
+    return JSON.parse(response);
+  };
   // Create an Axios instance with request and response interceptors
   const apiRequestAppointments = async <T = any,>(
     config: AxiosRequestConfig
@@ -125,6 +136,8 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     return apiRequest<T>(config, COMPLETE_APPOINTMENT_ROUTE);
   };
 
+
+  
   return (
     <AppointmentContext.Provider
       value={{
@@ -133,6 +146,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         fetchAllAppointmentTypes,
         fetchAvailableAppointments,
         bookAppointment,
+        getPatientAppointments,
         availableAppointmentsList,
         setAvailableAppointmentsList,
       }}

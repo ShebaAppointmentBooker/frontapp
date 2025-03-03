@@ -29,8 +29,6 @@ export default function AppointmentForm() {
   const [doctors, setDoctors] = useState<formIDs[]>([]);
 
   const {
-    fetchAvailableAppointments,
-    setAvailableAppointmentsList,
     fetchAllSpecializations,
     fetchAllAppointmentTypes,
     fetchDoctorsBySpecialization,
