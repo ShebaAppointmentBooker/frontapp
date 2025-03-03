@@ -89,29 +89,11 @@ export default function AppointmentForm() {
     DateTimePickerAndroid.open({
       value: date || new Date(),
       mode: "date",
+      minimumDate: new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate) {
           setDate(new Date(selectedDate.setHours(10, 0, 0, 0)));
-          // if (noTime) {
-          //   setDate(new Date(selectedDate.setHours(0, 0, 0, 0))); // Save only the date
-          // } else {
-          //   DateTimePickerAndroid.open({
-          //     value: selectedDate,
-          //     mode: "time",
-          //     onChange: (event, selectedTime) => {
-          //       if (selectedTime) {
-          //         const finalDate = new Date(
-          //           selectedDate.getFullYear(),
-          //           selectedDate.getMonth(),
-          //           selectedDate.getDate(),
-          //           selectedTime.getHours(),
-          //           selectedTime.getMinutes()
-          //         );
-          //         setDate(finalDate);
-          //       }
-          //     },
-          //   });
-          // }
+        
         }
       },
     });
@@ -271,6 +253,7 @@ export default function AppointmentForm() {
           value={date || new Date()}
           mode="datetime"
           display="default"
+          minimumDate={new Date()}
           onChange={handleDateChange}
         />
       )}

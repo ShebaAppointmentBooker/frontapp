@@ -10,6 +10,7 @@ import {
 import { Link } from "expo-router";
 import CollapsibleSection from "../../components/collapsible-section";
 import { useAppointments } from "../../contexts/appointment-context";
+import { useAuth } from "@/app/contexts/auth-context";
 import { appointmentType } from "@/app/types/appointmentType";
 import { AppointmentCard } from "./appointment-card";
 
@@ -23,6 +24,7 @@ export default function HomeScreen() {
   const [upcomingVisible, setUpcomingVisible] = useState(false);
   const [pastVisible, setPastVisible] = useState(false);
   const { getPatientAppointments } = useAppointments();
+  const { user } = useAuth();
   useEffect(() => {
     // Fetch upcoming appointments
     getPatientAppointments(false)
@@ -39,7 +41,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+      <Text style={styles.title}>Hello {user}!</Text>
 
       {/* Upcoming Appointments Section */}
       <CollapsibleSection
