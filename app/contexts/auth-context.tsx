@@ -17,26 +17,38 @@ import * as SecureStore from "expo-secure-store";
 import { API_ENDPOINTS } from "../../urlConfig/main-config";
 import {
   COMPLETE_USERS_ROUTE,
+  PATIENT_PATH,
   UserActions,
 } from "../../urlConfig/users-config";
 import { Alert } from "react-native";
 import { otpType } from "../types/otpType";
-interface User {
-  id: string;
-  email: string;
-  name: string;
+export interface User {
+  email?: string | null;
+  name: string | null;
+  phone?: string | null;
+  medicalHistory?: string | null;
+
   // Add other properties that your user object has
 }
 // Define the Auth context type
 interface AuthContextType {
   token: string | null;
   refreshToken: string | null;
-  user: string | null;
+  user: User;
   loading: boolean;
   loadingStartUp: boolean;
   // login: (email: string, password: string) => Promise<void>;
   requestOtp: (nationalId: string) => Promise<otpType>;
   loginWithOtp: (token: string, otp: string, user: string) => Promise<void>;
+  updatePatient: ({
+    email,
+    phone,
+    medicalHistory,
+  }: {
+    email?: string;
+    phone?: string;
+    medicalHistory?: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   apiRequest: <T = any>(
     config: AxiosRequestConfig,
@@ -53,7 +65,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const tokenRef = useRef<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<User>({
+    email: "",
+    name: "",
+    phone: "",
+    medicalHistory: "",
+    // Add other properties that your user object has
+  });
+  const [email, setEmail] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string | null>(null);
   const [loadingStartUp, setLoadingStartUp] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
   const refreshCallCounter = useRef(0);
@@ -76,15 +96,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedToken = await SecureStore.getItemAsync("token");
         storedRefreshToken = await SecureStore.getItemAsync("refreshToken");
         const storedUser = await SecureStore.getItemAsync("user");
+        const storedEmail = await SecureStore.getItemAsync("email");
+        const storedPhone = await SecureStore.getItemAsync("phone");
+        const storedMedicalHistory = await SecureStore.getItemAsync(
+          "medicalHistory"
+        );
 
         if (storedRefreshToken) {
           console.log("validating " + storedRefreshToken);
           await verifyToken(storedRefreshToken);
           console.log("verfied " + user);
           setToken(storedToken);
-          tokenRef.current=storedToken;
+          tokenRef.current = storedToken;
           setRefreshToken(storedRefreshToken);
-          setUser(storedUser);
+          setUser({
+            name: storedUser,
+            email: storedEmail,
+            phone: storedPhone,
+            medicalHistory: storedMedicalHistory,
+          });
+          // setEmail(email)
         }
       } catch (error: any) {
         if (storedRefreshToken) deleteCreds();
@@ -141,14 +172,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { timeout: 10000 }
       );
       // Store accessToken and refreshToken in your app state
-      const { accessToken, refreshToken } = response.data;
-      console.log(response.data);
+      const { accessToken, refreshToken, email, phone, medicalHistory } =
+        response.data;
+      console.log("date", response.data);
       setToken(accessToken);
-      tokenRef.current=accessToken
+      tokenRef.current = accessToken;
       setRefreshToken(refreshToken);
+      // setEmail(email);
+      // setPhone(phone);
+      setUser({ name: user, email, phone, medicalHistory });
       await SecureStore.setItemAsync("token", accessToken);
       await SecureStore.setItemAsync("refreshToken", refreshToken);
       await SecureStore.setItemAsync("user", user);
+      await SecureStore.setItemAsync("email", email);
+      await SecureStore.setItemAsync("phone", phone);
+      if (medicalHistory)
+        await SecureStore.setItemAsync("medicalHistory", medicalHistory);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorCode = error.code;
@@ -171,11 +210,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await SecureStore.deleteItemAsync("token");
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("user");
+      await SecureStore.deleteItemAsync("email");
+      await SecureStore.deleteItemAsync("phone");
+      await SecureStore.deleteItemAsync("medicalHistory");
 
       setToken(null);
-      tokenRef.current=null
+      tokenRef.current = null;
       setRefreshToken(null);
-      setUser(null);
+      setUser({
+        email: "",
+        name: "",
+        phone: "",
+      });
       refreshCallCounter.current = 0;
     } catch (error) {
       console.error("Error during logout cleanup:", error);
@@ -183,12 +229,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   const logout = async () => {
     try {
-      console.log("logging out")
+      console.log("logging out");
       if (tokenRef.current) {
         await axios.post(
           API_ENDPOINTS.patient[UserActions.LOGOUT],
           { refreshToken },
-          { headers: { Authorization: `Bearer ${tokenRef.current}` }, timeout: 10000 }
+          {
+            headers: { Authorization: `Bearer ${tokenRef.current}` },
+            timeout: 10000,
+          }
         );
       }
     } catch (error: any) {
@@ -224,7 +273,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         response.data;
 
       setToken(newToken);
-      tokenRef.current=newToken;
+      tokenRef.current = newToken;
       setRefreshToken(newRefreshToken);
 
       await SecureStore.setItemAsync("token", newToken);
@@ -238,7 +287,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Create an Axios instance with request and response interceptors
+  const updatePatient = async ({
+    email = "",
+    phone = "",
+    medicalHistory = "",
+  }) => {
+    console.log("lol", email, phone, medicalHistory);
+    const response = await apiRequestPatients({
+      method: "POST",
+      url: UserActions.UPDATE,
+      data: { email, phone, medicalHistory },
+    });
+    const newUser: User = {
+      name: user.name,
+    };
+
+    if (email) {
+      newUser.email = email;
+      await SecureStore.setItemAsync("email", email);
+    }
+    if (phone) {
+      newUser.phone = phone;
+      await SecureStore.setItemAsync("phone", phone);
+    }
+    if (medicalHistory) {
+      newUser.medicalHistory = medicalHistory;
+      await SecureStore.setItemAsync("medicalHistory", medicalHistory);
+    }
+
+    setUser((prev) => {
+      return { ...prev, ...newUser };
+    });
+    return response;
+  };
+  const apiRequestPatients = async <T = any,>(
+    config: AxiosRequestConfig
+  ): Promise<T> => {
+    return apiRequest<T>(config, PATIENT_PATH);
+  };
   const apiRequest = async <T = any,>(
     config: AxiosRequestConfig,
     baseURL: string,
@@ -367,6 +453,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loadingStartUp,
         requestOtp,
         loginWithOtp,
+        updatePatient,
         logout,
         apiRequest,
         refreshAuthTokenFunction,

@@ -61,7 +61,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hello {user}!</Text>
+      <Text style={styles.title}>Hello {user.name}!</Text>
 
       {/* Upcoming Appointments Section */}
       <CollapsibleSection

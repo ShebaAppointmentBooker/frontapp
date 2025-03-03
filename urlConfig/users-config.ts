@@ -10,12 +10,13 @@ export enum UserActions { // Add the `export` keyword here
   // LOGIN = "login",
   LOGOUT = "logout",
   REFRESH_TOKEN = "refreshtoken",
-  VERIFY="verify"
+  VERIFY="verify",
+  UPDATE="update"
 }
 
 // Define base paths for Doctor and Patient
-const DOCTOR_PATH = `${COMPLETE_USERS_ROUTE}/doctors`;
-const PATIENT_PATH = `${COMPLETE_USERS_ROUTE}/patients`;
+export const DOCTOR_PATH = `${COMPLETE_USERS_ROUTE}/doctors`;
+export const PATIENT_PATH = `${COMPLETE_USERS_ROUTE}/patients`;
 
 // Function to generate the API endpoints dynamically
 const generateEndpointsUsers = (modelPath: string) => {
@@ -26,6 +27,9 @@ const generateEndpointsUsers = (modelPath: string) => {
     [UserActions.LOGOUT]: `${modelPath}/${UserActions.LOGOUT}`,
     [UserActions.REFRESH_TOKEN]: `${modelPath}/${UserActions.REFRESH_TOKEN}`,
     [UserActions.VERIFY]: `${modelPath}/${UserActions.VERIFY}`,
+    [UserActions.UPDATE]: `${modelPath}/${UserActions.UPDATE}`,
+
+    
   };
 };
 export const generateEndpointsPatients={

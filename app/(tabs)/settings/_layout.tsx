@@ -2,31 +2,18 @@ import React from "react";
 import { Stack } from "expo-router";
 import { TouchableOpacity, View,StyleSheet,Text } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
-export default function HomeLayout() {
+export default function SettingsLayout() {
   const { logout, token } = useAuth();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: "home",
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity style={styles.logout} onPress={logout}>
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          ),
+          title: "settings",
+          headerShown: false
         }}
       />
-      <Stack.Screen
-        name="appointmentForm"
-        options={{ title: "Appointment Form" }}
-      />
-      <Stack.Screen
-        name="availableAppointments"
-        options={{ title: "Available Appointments" }}
-      />
+      
     </Stack>
   );
 }
