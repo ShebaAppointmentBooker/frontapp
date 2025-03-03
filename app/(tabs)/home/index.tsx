@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Button,
+  Alert,
 } from "react-native";
 import { Link } from "expo-router";
 import CollapsibleSection from "../../components/collapsible-section";
@@ -23,8 +24,27 @@ export default function HomeScreen() {
   );
   const [upcomingVisible, setUpcomingVisible] = useState(false);
   const [pastVisible, setPastVisible] = useState(false);
-  const { getPatientAppointments } = useAppointments();
+  const { getPatientAppointments, cancelAppointment } = useAppointments();
   const { user } = useAuth();
+  const PostCancelAppointment = async (appointmentId: string) => {
+    try {
+      await cancelAppointment(appointmentId);
+      setUpcomingAppointments((prev) =>
+        prev.filter(
+          (appointment) => appointment.appointmentId !== appointmentId
+        )
+      );
+      Alert.alert(
+        "Appointment Canceled",
+        "You Can No Longer Attend This Appointment"
+      );
+    } catch (error: any) {
+      console.error(
+        "Error fetching available appointments:",
+        error?.response?.data
+      );
+    }
+  };
   useEffect(() => {
     // Fetch upcoming appointments
     getPatientAppointments(false)
@@ -53,7 +73,10 @@ export default function HomeScreen() {
           data={upcomingAppointments}
           keyExtractor={(item) => item.appointmentId}
           renderItem={({ item }) => (
-            <AppointmentCard appointment={item} showCancel />
+            <AppointmentCard
+              appointment={item}
+              cancelFunc={PostCancelAppointment}
+            />
           )}
         />
       </CollapsibleSection>

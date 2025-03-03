@@ -50,6 +50,7 @@ interface AppointmentContextType {
   fetchAllAppointmentTypes: () => Promise<formIDs[]>;
   fetchDoctorsBySpecialization:(specializationId:string|undefined)=>Promise<any[]>
   bookAppointment: (appointmentId: string) => Promise<void>;
+  cancelAppointment: (appointmentId: string) => Promise<void>;
   getPatientAppointments: (happened: boolean) => Promise<appointmentType[]>;
   
   availableAppointmentsList: appointmentType[];
@@ -120,6 +121,14 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     });
     return response.data;
   };
+  const cancelAppointment = async (appointmentId: string) => {
+    const response = await apiRequestAppointments({
+      method: "POST",
+      url: AppointmentActions.BOOK_APPOINTMENT,
+      data: { appointmentId },
+    });
+    return response.data;
+  };
   const getPatientAppointments = async (happened: boolean) => {
     const response = await apiRequestAppointments({
       method: "POST",
@@ -146,6 +155,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
         fetchAllAppointmentTypes,
         fetchAvailableAppointments,
         bookAppointment,
+        cancelAppointment,
         getPatientAppointments,
         availableAppointmentsList,
         setAvailableAppointmentsList,

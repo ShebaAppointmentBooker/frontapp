@@ -1,8 +1,14 @@
 import { appointmentType } from "@/app/types/appointmentType";
+import { useAppointments } from "../../contexts/appointment-context";
 import React from "react";
-import { View, Text, StyleSheet, Button,TouchableOpacity } from "react-native";
-
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 
 const formatDateTime = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -19,11 +25,12 @@ const formatDateTime = (dateStr: string) => {
 
 export const AppointmentCard = ({
   appointment,
-  showCancel,
+  cancelFunc,
 }: {
   appointment: appointmentType;
-  showCancel?: boolean;
+  cancelFunc?: (appointmentId: string) => Promise<void>;
 }) => {
+  const { cancelAppointment } = useAppointments();
   return (
     <View style={styles.card}>
       <Text style={styles.dateText}>{formatDateTime(appointment.date)}</Text>
@@ -42,8 +49,30 @@ export const AppointmentCard = ({
         <Text style={styles.cancelledText}>Cancelled</Text>
       )}
 
-      {showCancel && (
-        <Button title="Cancel" color="#d9534f" onPress={() => {}} />
+      {cancelFunc && (
+        <Button
+          title="Cancel"
+          color="#d9534f"
+          onPress={() =>
+            Alert.alert(
+              "Cancel Appointment?", // Title
+              "It Will Be Available For Everyone", // Message
+              [
+                {
+                  text: "No",
+                  style: "cancel", // Cancels the alert
+                },
+                {
+                  text: "Yes",
+                  onPress: () => {
+                    console.log("User confirmed! Executing function...");
+                    cancelFunc(appointment.appointmentId); // Call your function here
+                  },
+                },
+              ]
+            )
+          }
+        />
       )}
     </View>
   );
