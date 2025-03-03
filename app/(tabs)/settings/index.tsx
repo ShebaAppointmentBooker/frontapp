@@ -160,9 +160,8 @@ export default function SettingsScreen() {
                   onPress={() => {
                     setEditingField(field);
                     setTimeout(() => {
-                      inputRef.current.focus();
+                      if (inputRef.current) inputRef.current.focus();
                     }, 500);
-                  
                   }}
                   style={styles.iconButton}
                 >
