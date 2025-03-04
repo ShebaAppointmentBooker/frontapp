@@ -228,6 +228,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   const logout = async () => {
+    deleteCreds();
     try {
       console.log("logging out");
       if (tokenRef.current) {
@@ -249,7 +250,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Logout error:", error);
       }
     } finally {
-      deleteCreds();
+     
     }
   };
   // Handle Token Refresh

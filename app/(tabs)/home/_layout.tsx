@@ -13,15 +13,15 @@ export default function HomeLayout() {
         name="index"
         options={{
           title: "home",
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity style={styles.logout} onPress={()=>{
-                console.log("hi")
-                logout()}}>
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
-            </View>
-          ),
+          // headerRight: () => (
+          //   <View style={styles.headerRightContainer}>
+          //     <TouchableOpacity style={styles.logout} onPress={()=>{
+          //       console.log("hi")
+          //       logout()}}>
+          //       <Text style={styles.logoutText}>Logout</Text>
+          //     </TouchableOpacity>
+          //   </View>
+          // ),
         }}
       />
       <Stack.Screen

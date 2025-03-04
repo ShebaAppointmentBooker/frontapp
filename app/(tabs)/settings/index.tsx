@@ -120,12 +120,12 @@ export default function SettingsScreen() {
           editing: editingField === "medicalHistory",
           multiline: true,
         },
-      ].map(({ label, field, value, setValue, editing, multiline }) => {
+      ].map(({ label, field, value, setValue, editing, multiline },index) => {
         const inputRef = useRef<any>(null);
         if (!editing) if (editingField) return <></>;
 
         return (
-          <View key={field} style={[styles.editContainer, {}]}>
+          <View  key={index} style={[styles.editContainer, {}]}>
             <Text style={styles.label}>{label}:</Text>
             <View style={styles.inputContainer}>
               {editing ? (
