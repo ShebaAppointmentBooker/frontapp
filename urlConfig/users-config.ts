@@ -1,8 +1,8 @@
 // config.ts
-export const BASE_URL_USERS = "http://192.168.1.240";
-// export const BASE_URL_USERS = "http://192.168.168.38"
-export const USERS_ROUTE="5000/users";
-export const COMPLETE_USERS_ROUTE=BASE_URL_USERS+":"+USERS_ROUTE;
+// export const BASE_URL_USERS = "http://192.168.1.240";
+export const BASE_URL_USERS = "http://192.168.168.38";
+export const USERS_ROUTE = "5000/users";
+export const COMPLETE_USERS_ROUTE = BASE_URL_USERS + ":" + USERS_ROUTE;
 // Enum for common actions (login, logout, refreshToken)
 export enum UserActions { // Add the `export` keyword here
   REQUESTOTP = "requestotp",
@@ -10,8 +10,8 @@ export enum UserActions { // Add the `export` keyword here
   // LOGIN = "login",
   LOGOUT = "logout",
   REFRESH_TOKEN = "refreshtoken",
-  VERIFY="verify",
-  UPDATE="update"
+  VERIFY = "verify",
+  UPDATE = "update",
 }
 
 // Define base paths for Doctor and Patient
@@ -28,14 +28,11 @@ const generateEndpointsUsers = (modelPath: string) => {
     [UserActions.REFRESH_TOKEN]: `${modelPath}/${UserActions.REFRESH_TOKEN}`,
     [UserActions.VERIFY]: `${modelPath}/${UserActions.VERIFY}`,
     [UserActions.UPDATE]: `${modelPath}/${UserActions.UPDATE}`,
-
-    
   };
 };
-export const generateEndpointsPatients={
-  ...generateEndpointsUsers(PATIENT_PATH)
-}
-export const generateEndpointsDoctors={
-  ...generateEndpointsUsers(DOCTOR_PATH)
-}
-
+export const generateEndpointsPatients = {
+  ...generateEndpointsUsers(PATIENT_PATH),
+};
+export const generateEndpointsDoctors = {
+  ...generateEndpointsUsers(DOCTOR_PATH),
+};

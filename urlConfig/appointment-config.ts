@@ -1,6 +1,6 @@
 // config.ts
-export const BASE_URL_APPOINTMENTS = "http://192.168.1.240";
-// export const BASE_URL_APPOINTMENTS = "http://192.168.168.38"
+// export const BASE_URL_APPOINTMENTS = "http://192.168.1.240";
+export const BASE_URL_APPOINTMENTS = "http://192.168.168.38"
 export const APPOINTMENT_ROUTE = "5001/appointments";
 export const COMPLETE_APPOINTMENT_ROUTE =
   BASE_URL_APPOINTMENTS + ":" + APPOINTMENT_ROUTE;
